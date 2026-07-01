@@ -12,6 +12,7 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { ButtonLink } from "../ui/button";
+import { LogoMark } from "../ui/logo";
 import { WHATSAPP_URL } from "@/lib/utils";
 
 const flow = [
@@ -107,8 +108,8 @@ export function Hero() {
           <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-grad-brand-soft blur-2xl" />
           <div className="glass rounded-[1.75rem] p-6 shadow-card">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                SolverIA Engine
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-slate-500">
+                <LogoMark className="h-4 w-4 text-brand-cyan" /> SolverIA Engine
               </span>
               <span className="flex gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />

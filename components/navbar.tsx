@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles } from "lucide-react";
 import { ButtonLink } from "./ui/button";
+import { Logo } from "./ui/logo";
 import { WHATSAPP_URL } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -37,13 +38,8 @@ export function Navbar() {
       )}
     >
       <nav className="container-px flex items-center justify-between">
-        <Link href="#top" className="flex items-center gap-2.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-grad-brand font-display text-lg font-extrabold text-ink-950 shadow-glow">
-            S
-          </span>
-          <span className="font-display text-lg font-extrabold tracking-tight text-white">
-            Solver<span className="text-brand-cyan">IA</span>
-          </span>
+        <Link href="#top" className="flex items-center">
+          <Logo markClassName="h-9 w-9" wordClassName="text-xl" />
         </Link>
 
         <div className="hidden items-center gap-8 lg:flex">

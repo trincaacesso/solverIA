@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Linkedin, Instagram, MessageCircle, Mail } from "lucide-react";
+import { Logo } from "./ui/logo";
 import { WHATSAPP_URL } from "@/lib/utils";
 
 const groups = [
@@ -36,13 +37,8 @@ export function Footer() {
       <div className="container-px">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <Link href="#top" className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-grad-brand font-display text-lg font-extrabold text-ink-950">
-                S
-              </span>
-              <span className="font-display text-lg font-extrabold tracking-tight text-white">
-                Solver<span className="text-brand-cyan">IA</span>
-              </span>
+            <Link href="#top" className="flex items-center">
+              <Logo markClassName="h-9 w-9" wordClassName="text-xl" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
               We save time and increase sales using Artificial Intelligence.
