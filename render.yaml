@@ -1,0 +1,17 @@
+# Render Blueprint — SolverIA (Next.js Web Service)
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: solveria
+    runtime: node
+    plan: free
+    branch: main
+    # --include=dev guarantees build tools (tailwind, typescript, postcss)
+    # are installed even if Render sets NODE_ENV=production.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

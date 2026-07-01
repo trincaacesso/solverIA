@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "SolverIA — We save time and increase sales using Artificial Intelligence.",
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
