@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Sora", system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-white/10;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink-950 text-slate-200 antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+  ::selection {
+    @apply bg-brand-violet/40 text-white;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #05060c;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e2740;
+    border-radius: 999px;
+    border: 2px solid #05060c;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2c3860;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+
+  /* Glassmorphism surface */
+  .glass {
+    @apply border border-white/10 bg-white/[0.03] backdrop-blur-xl;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-grad-brand bg-clip-text text-transparent;
+  }
+
+  /* Section eyebrow label */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-brand-cyan;
+  }
+
+  /* Glow button with shimmer sweep */
+  .btn-glow {
+    @apply relative overflow-hidden rounded-full bg-grad-brand px-6 py-3 text-sm font-semibold text-ink-950 shadow-glow transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow-cyan;
+  }
+  .btn-glow::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+  }
+  .btn-glow:hover::after {
+    @apply animate-shimmer;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.02] px-6 py-3 text-sm font-semibold text-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.06];
+  }
+}
+
+/* Ambient radial glow used behind hero / sections */
+.ambient-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(124, 92, 255, 0.18), transparent 70%),
+    radial-gradient(40% 40% at 80% 20%, rgba(34, 211, 238, 0.12), transparent 70%);
+}
