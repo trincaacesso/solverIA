@@ -1,0 +1,20 @@
+{
+  "name": "solveria-chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SolverIA — embeddable AI sales chatbot (multi-tenant) powered by Claude.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.109.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
