@@ -53,7 +53,7 @@ function Toggle({
 }
 
 export default function SettingsPage() {
-  const [arenaName, setArenaName] = useState("Arena Praia Grande");
+  const [arenaName, setArenaName] = useState("CT VH");
   const [openTime, setOpenTime] = useState("06:00");
   const [closeTime, setCloseTime] = useState("22:00");
   const [maxPerClass, setMaxPerClass] = useState("12");
