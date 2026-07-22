@@ -1,18 +1,21 @@
-import { Instagram } from "lucide-react";
+"use client";
 
-// Publicações do Instagram do CT VH exibidas no feed (ordem de exibição).
-// Para adicionar um post novo: cole a URL aqui no topo da lista.
-const instagramPosts = [
-  "https://www.instagram.com/reel/DHJHeyWxCT-/",
-  "https://www.instagram.com/reel/DHWBxBVxMr-/",
-  "https://www.instagram.com/p/DXo2vV9ivuk/",
-  "https://www.instagram.com/p/DZU-wwylpe9/",
-  "https://www.instagram.com/p/DaVZ6NnFgno/",
-  "https://www.instagram.com/reel/DakvWLkun51/",
-  "https://www.instagram.com/p/DY7PTimx1li/",
-];
+import { useEffect, useState } from "react";
+import { Instagram, Sparkles } from "lucide-react";
+import { instagramPosts, getUnseenPosts, markAllPostsSeen } from "@/lib/arena-feed";
+import { useAuth } from "@/components/arena/auth-context";
 
 export default function FeedPage() {
+  const { user } = useAuth();
+  // Captura o que era novidade ao abrir a página, para exibir o selo "Novo".
+  const [newPosts, setNewPosts] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    setNewPosts(new Set(getUnseenPosts(user.username)));
+    markAllPostsSeen(user.username);
+  }, [user]);
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-6">
@@ -29,8 +32,14 @@ export default function FeedPage() {
         {instagramPosts.map((url) => (
           <div
             key={url}
-            className="overflow-hidden rounded-xl border border-arena-border bg-arena-card shadow-sm transition-shadow duration-200 hover:shadow-md"
+            className="relative overflow-hidden rounded-xl border border-arena-border bg-arena-card shadow-sm transition-shadow duration-200 hover:shadow-md"
           >
+            {newPosts.has(url) && (
+              <span className="absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-arena-blue px-2.5 py-1 text-xs font-bold text-white shadow-md">
+                <Sparkles className="h-3.5 w-3.5" />
+                Novo
+              </span>
+            )}
             <iframe
               src={`${url}embed/`}
               title={`Publicação do Instagram CT VH — ${url}`}

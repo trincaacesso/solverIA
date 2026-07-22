@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarDays,
   Users,
-  DollarSign,
   Settings,
   Menu,
   X,
@@ -15,15 +14,33 @@ import {
   BarChart3,
   Newspaper,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/arena/auth-context";
+import { getUnseenPosts, FEED_SEEN_EVENT } from "@/lib/arena-feed";
+
+/** Quantos posts do Feed o usuário logado ainda não viu (atualiza ao visitar o Feed). */
+function useFeedUnseenCount() {
+  const { user } = useAuth();
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!user) {
+      setCount(0);
+      return;
+    }
+    const compute = () => setCount(getUnseenPosts(user.username).length);
+    compute();
+    window.addEventListener(FEED_SEEN_EVENT, compute);
+    return () => window.removeEventListener(FEED_SEEN_EVENT, compute);
+  }, [user]);
+  return count;
+}
 
 const navigation = [
   { name: "Calendário de Aulas", href: "/arena/calendar", icon: CalendarDays, adminOnly: false },
   { name: "Feed", href: "/arena/feed", icon: Newspaper, adminOnly: false },
   { name: "Gestão de Alunos", href: "/arena/students", icon: Users, adminOnly: true },
-  { name: "Financeiro", href: "/arena/finance", icon: DollarSign, adminOnly: true },
   { name: "Relatório Mensal", href: "/arena/report", icon: BarChart3, adminOnly: true },
   { name: "CEFFLASH", href: "/arena/cefflash", icon: Zap, adminOnly: false },
   { name: "Configurações", href: "/arena/settings", icon: Settings, adminOnly: true },
@@ -106,6 +123,7 @@ function Brand() {
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const feedUnseen = useFeedUnseenCount();
   const items = navigation.filter(
     (item) => !item.adminOnly || user?.role === "admin",
   );
@@ -113,6 +131,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex-1 space-y-1 px-2 py-4">
       {items.map((item) => {
         const active = pathname === item.href;
+        const badge = item.href === "/arena/feed" ? feedUnseen : 0;
         return (
           <Link
             key={item.name}
@@ -127,6 +146,16 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           >
             <item.icon className="mr-3 h-5 w-5" />
             {item.name}
+            {badge > 0 && (
+              <span
+                className={cn(
+                  "ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold",
+                  active ? "bg-white text-arena-blue" : "bg-arena-red text-white",
+                )}
+              >
+                {badge}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -156,6 +185,8 @@ function userInitials(name: string) {
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
+  const feedUnseen = useFeedUnseenCount();
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen bg-arena-bg text-arena-ink">
@@ -218,6 +249,23 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/arena/feed")}
+              className="relative rounded-md p-2 text-arena-muted transition-colors hover:bg-arena-blue/10 hover:text-arena-blue"
+              aria-label={
+                feedUnseen > 0
+                  ? `${feedUnseen} novidades no Feed`
+                  : "Notificações"
+              }
+              title="Novidades do Feed"
+            >
+              <Bell className="h-5 w-5" />
+              {feedUnseen > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-arena-red px-1 text-[10px] font-bold text-white">
+                  {feedUnseen}
+                </span>
+              )}
+            </button>
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-arena-ink">
                 {user?.displayName ?? ""}

@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, Plus, Trash2, Shuffle, Trophy, Crown, Pencil } from "lucide-react";
+import {
+  Zap,
+  Plus,
+  Trash2,
+  Shuffle,
+  Trophy,
+  Crown,
+  ArrowLeft,
+  Users,
+  PlusCircle,
+} from "lucide-react";
 import {
   buildBracket,
   recomputeBracket,
@@ -10,17 +20,53 @@ import {
   type Round,
 } from "@/lib/bracket";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/arena/auth-context";
 
 interface Championship {
+  id: string;
   name: string;
   rounds: Round[];
+  pairsCount: number;
 }
 
+// Competição de exemplo com as duplas da Elite B.
+function seedChampionships(): Championship[] {
+  const pairs = [
+    "Ericky e Biel",
+    "Enzo Felipe e David Silva",
+    "Bernardo e Kauã Martins",
+    "Victor e Vini",
+  ];
+  return [
+    {
+      id: "seed-1",
+      name: "Torneio Interno CT VH — Elite B",
+      rounds: buildBracket(pairs),
+      pairsCount: pairs.length,
+    },
+  ];
+}
+
+const inputClass =
+  "w-full rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue";
+
 export default function CefflashPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  const [championships, setChampionships] = useState<Championship[]>(
+    seedChampionships,
+  );
+  // null = lista de competições; "new" = formulário; senão id da competição aberta.
+  const [view, setView] = useState<string | null>(null);
+  const [nextId, setNextId] = useState(100);
+
+  // Formulário de nova competição
   const [name, setName] = useState("");
   const [pairs, setPairs] = useState<string[]>(["", "", "", ""]);
   const [error, setError] = useState("");
-  const [championship, setChampionship] = useState<Championship | null>(null);
+
+  const active = championships.find((c) => c.id === view) ?? null;
 
   const updatePair = (i: number, value: string) =>
     setPairs((p) => p.map((v, idx) => (idx === i ? value : v)));
@@ -40,6 +86,13 @@ export default function CefflashPage() {
       return arr;
     });
 
+  const openNewForm = () => {
+    setName("");
+    setPairs(["", "", "", ""]);
+    setError("");
+    setView("new");
+  };
+
   const generate = () => {
     const clean = pairs.map((p) => p.trim()).filter(Boolean);
     if (!name.trim()) {
@@ -55,24 +108,34 @@ export default function CefflashPage() {
       return;
     }
     setError("");
-    setChampionship({ name: name.trim(), rounds: buildBracket(clean) });
+    const id = String(nextId);
+    setNextId((n) => n + 1);
+    setChampionships((prev) => [
+      ...prev,
+      { id, name: name.trim(), rounds: buildBracket(clean), pairsCount: clean.length },
+    ]);
+    setView(id);
   };
+
+  const removeChampionship = (id: string) =>
+    setChampionships((prev) => prev.filter((c) => c.id !== id));
 
   const pickWinner = (roundIdx: number, matchIdx: number, side: "a" | "b") => {
-    setChampionship((c) => {
-      if (!c) return c;
-      const rounds = c.rounds.map((r) => r.map((m) => ({ ...m })));
-      const match = rounds[roundIdx][matchIdx];
-      if (side === "a" ? !match.a : !match.b) return c; // empty slot
-      match.winner = match.winner === side ? null : side;
-      recomputeBracket(rounds);
-      return { ...c, rounds };
-    });
+    if (!isAdmin || !active) return;
+    setChampionships((prev) =>
+      prev.map((c) => {
+        if (c.id !== active.id) return c;
+        const rounds = c.rounds.map((r) => r.map((m) => ({ ...m })));
+        const match = rounds[roundIdx][matchIdx];
+        if (side === "a" ? !match.a : !match.b) return c; // empty slot
+        match.winner = match.winner === side ? null : side;
+        recomputeBracket(rounds);
+        return { ...c, rounds };
+      }),
+    );
   };
 
-  const reset = () => setChampionship(null);
-
-  const champion = championship ? championOf(championship.rounds) : null;
+  const champion = active ? championOf(active.rounds) : null;
 
   return (
     <div>
@@ -83,14 +146,109 @@ export default function CefflashPage() {
         <div>
           <h1 className="text-2xl font-bold text-arena-ink sm:text-3xl">CEFFLASH</h1>
           <p className="text-sm text-arena-muted">
-            Crie um campeonato e gere o chaveamento das duplas automaticamente.
+            {view === null
+              ? "Clique em uma competição para entrar."
+              : view === "new"
+                ? "Monte a nova competição e gere o chaveamento."
+                : "Acompanhe o chaveamento da competição."}
           </p>
         </div>
       </div>
 
-      {!championship ? (
-        /* ---------- Setup form ---------- */
+      {view === null ? (
+        /* ---------- Lista de competições ---------- */
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {championships.map((c) => {
+            const done = championOf(c.rounds);
+            return (
+              <button
+                key={c.id}
+                onClick={() => setView(c.id)}
+                className="group relative flex aspect-square flex-col items-center justify-center gap-3 rounded-xl border border-arena-border bg-arena-card p-4 text-center shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-arena-blue hover:shadow-md"
+              >
+                {isAdmin && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeChampionship(c.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                        removeChampionship(c.id);
+                      }
+                    }}
+                    className="absolute right-2 top-2 rounded p-1 text-arena-muted opacity-0 transition-opacity hover:bg-arena-red/10 hover:text-arena-red group-hover:opacity-100"
+                    aria-label="Excluir competição"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </span>
+                )}
+                <span
+                  className={cn(
+                    "flex h-14 w-14 items-center justify-center rounded-2xl",
+                    done
+                      ? "bg-arena-orange/15 text-arena-orange"
+                      : "bg-arena-blue/10 text-arena-blue",
+                  )}
+                >
+                  {done ? (
+                    <Crown className="h-7 w-7" />
+                  ) : (
+                    <Trophy className="h-7 w-7" />
+                  )}
+                </span>
+                <span className="line-clamp-2 text-sm font-bold text-arena-ink">
+                  {c.name}
+                </span>
+                <span className="flex items-center gap-1 text-xs text-arena-muted">
+                  <Users className="h-3.5 w-3.5" />
+                  {c.pairsCount} duplas
+                </span>
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                    done
+                      ? "bg-arena-orange/15 text-arena-orange"
+                      : "bg-arena-green/15 text-arena-green",
+                  )}
+                >
+                  {done ? `Campeão: ${done}` : "Em andamento"}
+                </span>
+              </button>
+            );
+          })}
+
+          {isAdmin && (
+            <button
+              onClick={openNewForm}
+              className="flex aspect-square flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-arena-border bg-transparent p-4 text-arena-muted transition-all duration-200 hover:-translate-y-1 hover:border-arena-blue hover:text-arena-blue"
+            >
+              <PlusCircle className="h-10 w-10" />
+              <span className="text-sm font-semibold">Nova competição</span>
+            </button>
+          )}
+
+          {championships.length === 0 && !isAdmin && (
+            <p className="col-span-full py-10 text-center text-sm text-arena-muted">
+              Nenhuma competição no momento.
+            </p>
+          )}
+        </div>
+      ) : view === "new" ? (
+        /* ---------- Formulário de nova competição ---------- */
         <div className="max-w-2xl space-y-6">
+          <button
+            type="button"
+            onClick={() => setView(null)}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-arena-blue transition-opacity hover:opacity-80"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar às competições
+          </button>
+
           <section className="rounded-lg border border-arena-border bg-arena-card p-5 shadow-sm">
             <label className="mb-1.5 block text-sm font-medium text-arena-ink">
               Nome do campeonato
@@ -99,7 +257,7 @@ export default function CefflashPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex.: Copa CT VH de Verão"
-              className="w-full rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue"
+              className={inputClass}
             />
           </section>
 
@@ -128,7 +286,7 @@ export default function CefflashPage() {
                     value={pair}
                     onChange={(e) => updatePair(i, e.target.value)}
                     placeholder={`Dupla ${i + 1}`}
-                    className="flex-1 rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue"
+                    className={cn(inputClass, "flex-1")}
                   />
                   <button
                     type="button"
@@ -164,26 +322,21 @@ export default function CefflashPage() {
             Gerar chaveamento
           </button>
         </div>
-      ) : (
-        /* ---------- Bracket view ---------- */
+      ) : active ? (
+        /* ---------- Chaveamento da competição ---------- */
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-arena-muted">
-                Campeonato
-              </p>
-              <h2 className="text-xl font-bold text-arena-ink">
-                {championship.name}
-              </h2>
+              <button
+                type="button"
+                onClick={() => setView(null)}
+                className="mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-arena-blue transition-opacity hover:opacity-80"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar às competições
+              </button>
+              <h2 className="text-xl font-bold text-arena-ink">{active.name}</h2>
             </div>
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center gap-2 rounded-md border border-arena-border px-4 py-2 text-sm font-semibold text-arena-ink transition-colors hover:border-arena-blue hover:text-arena-blue"
-            >
-              <Pencil className="h-4 w-4" />
-              Editar / Novo
-            </button>
           </div>
 
           {champion && (
@@ -199,12 +352,14 @@ export default function CefflashPage() {
           )}
 
           <p className="mb-3 text-sm text-arena-muted">
-            Clique na dupla vencedora de cada confronto para avançá-la.
+            {isAdmin
+              ? "Clique na dupla vencedora de cada confronto para avançá-la."
+              : "Acompanhe os confrontos — apenas o administrador registra os vencedores."}
           </p>
 
           <div className="overflow-x-auto pb-4">
             <div className="flex min-w-max gap-6">
-              {championship.rounds.map((round, rIdx) => (
+              {active.rounds.map((round, rIdx) => (
                 <div
                   key={rIdx}
                   className="flex w-56 flex-shrink-0 flex-col justify-around gap-4"
@@ -225,20 +380,20 @@ export default function CefflashPage() {
                           <button
                             key={side}
                             type="button"
-                            disabled={isBye}
+                            disabled={isBye || !isAdmin}
                             onClick={() => pickWinner(rIdx, mIdx, side)}
                             className={cn(
                               "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors",
                               sIdx === 0 && "border-b border-arena-border",
                               isWinner
                                 ? "bg-arena-blue/15 font-semibold text-arena-ink"
-                                : "text-arena-ink hover:bg-arena-bg",
+                                : "text-arena-ink",
+                              isAdmin && !isBye && "hover:bg-arena-bg",
                               isBye && "cursor-default text-arena-muted",
+                              !isAdmin && "cursor-default",
                             )}
                           >
-                            <span className="truncate">
-                              {team ?? "—"}
-                            </span>
+                            <span className="truncate">{team ?? "—"}</span>
                             {isWinner && (
                               <Trophy className="ml-2 h-4 w-4 flex-shrink-0 text-arena-blue" />
                             )}
@@ -252,7 +407,7 @@ export default function CefflashPage() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
