@@ -18,13 +18,70 @@ interface Student {
   since: string;
 }
 
+// Turma atribuída a partir das listas de treino; "—" = a definir.
+// Contato e plano ainda não informados (plano padrão: Mensal).
+function aluno(id: number, name: string, level: string): Student {
+  return {
+    id: String(id),
+    name,
+    email: "",
+    phone: "",
+    plan: "Mensal",
+    level,
+    status: "Ativo",
+    since: "—",
+  };
+}
+
 const students: Student[] = [
-  { id: "1", name: "Carlos Mendes", email: "carlos@email.com", phone: "(11) 98888-1111", plan: "Mensal", level: "Iniciante", status: "Ativo", since: "Jan/2025" },
-  { id: "2", name: "Fernanda Lima", email: "fernanda@email.com", phone: "(11) 97777-2222", plan: "Trimestral", level: "Intermediário", status: "Ativo", since: "Nov/2024" },
-  { id: "3", name: "Rafael Souza", email: "rafael@email.com", phone: "(11) 96666-3333", plan: "Anual", level: "Avançado", status: "Ativo", since: "Mar/2024" },
-  { id: "4", name: "Beatriz Alves", email: "beatriz@email.com", phone: "(11) 95555-4444", plan: "Mensal", level: "Iniciante", status: "Inadimplente", since: "Fev/2025" },
-  { id: "5", name: "Gustavo Rocha", email: "gustavo@email.com", phone: "(11) 94444-5555", plan: "Avulso", level: "Intermediário", status: "Inativo", since: "Set/2024" },
-  { id: "6", name: "Juliana Prado", email: "juliana@email.com", phone: "(11) 93333-6666", plan: "Trimestral", level: "Avançado", status: "Ativo", since: "Dez/2024" },
+  aluno(1, "Acacio", "Pré-Elite"),
+  aluno(2, "Aline", "Iniciante"),
+  aluno(3, "Amanda Pereira", "Iniciante"),
+  aluno(4, "Ana Beatriz", "Aprendiz"),
+  aluno(5, "Ana Clara", "Iniciante"),
+  aluno(6, "Ana Luisa", "Iniciante"),
+  aluno(7, "Anderson Luis", "—"),
+  aluno(8, "Andressa Gomes", "—"),
+  aluno(9, "Anna Julia", "Iniciante"),
+  aluno(10, "Bernardo Duarte", "Elite B"),
+  aluno(11, "Brendon", "Iniciante"),
+  aluno(12, "Camila Rodrigues", "Feminino Avançado"),
+  aluno(13, "Cecilia Gramschelli", "Feminino"),
+  aluno(14, "Cindya", "Aprendiz"),
+  aluno(15, "Clarckson Marques", "Iniciante"),
+  aluno(16, "Daniel Alves", "—"),
+  aluno(17, "Daniel Lages", "—"),
+  aluno(18, "Daniel Silva Baia", "Pré-Elite"),
+  aluno(19, "David Madalena", "—"),
+  aluno(20, "David Silva", "Elite B"),
+  aluno(21, "Eduarda Marques", "Aprendiz"),
+  aluno(22, "Enzo Felipe", "Elite B"),
+  aluno(23, "Enzo Neves", "Pré-Elite"),
+  aluno(24, "Ericky", "Elite B"),
+  aluno(25, "Francielle", "Feminino Avançado"),
+  aluno(26, "Gabriel Avelino (Caixa)", "Iniciante"),
+  aluno(27, "Giovanna Teixeira", "—"),
+  aluno(28, "Guilherme Almeida", "Aprendiz"),
+  aluno(29, "Guilherme Pereira", "—"),
+  aluno(30, "Hugo Oliveira", "Aprendiz"),
+  aluno(31, "Jotinha", "Aprendiz"),
+  aluno(32, "Karla Thais", "Iniciante"),
+  aluno(33, "Kauã Martins", "Elite B"),
+  aluno(34, "Lara Grazielle", "Aprendiz"),
+  aluno(35, "Laura", "—"),
+  aluno(36, "Livia Eduarda", "Aprendiz"),
+  aluno(37, "Mariana Fagundes", "Feminino Avançado"),
+  aluno(38, "Nicolas Taylor", "Iniciante"),
+  aluno(39, "Pedro Dias", "Pré-Elite"),
+  aluno(40, "Pedro Henrique", "Aprendiz"),
+  aluno(41, "Phillip Maximo", "—"),
+  aluno(42, "Ruivo", "Aprendiz"),
+  aluno(43, "Ryan Pablo", "—"),
+  aluno(44, "Victor Gabriel", "Elite B"),
+  aluno(45, "Vinicius Lacerda", "Elite B"),
+  aluno(46, "Yasmin Lawrence", "Feminino Avançado"),
+  aluno(47, "Yasmin Silva", "Aprendiz"),
+  aluno(48, "Yuri Victor", "—"),
 ];
 
 const statusStyles: Record<Status, string> = {
@@ -106,7 +163,7 @@ export default function StudentsPage() {
                 <th className="px-4 py-3 font-semibold">Aluno</th>
                 <th className="px-4 py-3 font-semibold">Contato</th>
                 <th className="px-4 py-3 font-semibold">Plano</th>
-                <th className="px-4 py-3 font-semibold">Nível</th>
+                <th className="px-4 py-3 font-semibold">Turma</th>
                 <th className="px-4 py-3 font-semibold">Desde</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
               </tr>
@@ -125,12 +182,22 @@ export default function StudentsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="flex items-center gap-1.5 text-arena-muted">
-                      <Phone className="h-3.5 w-3.5" /> {s.phone}
-                    </p>
-                    <p className="flex items-center gap-1.5 text-arena-muted">
-                      <Mail className="h-3.5 w-3.5" /> {s.email}
-                    </p>
+                    {s.phone || s.email ? (
+                      <>
+                        {s.phone && (
+                          <p className="flex items-center gap-1.5 text-arena-muted">
+                            <Phone className="h-3.5 w-3.5" /> {s.phone}
+                          </p>
+                        )}
+                        {s.email && (
+                          <p className="flex items-center gap-1.5 text-arena-muted">
+                            <Mail className="h-3.5 w-3.5" /> {s.email}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-arena-muted">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-arena-ink">{s.plan}</td>
                   <td className="px-4 py-3 text-arena-ink">{s.level}</td>

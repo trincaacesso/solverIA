@@ -24,6 +24,8 @@ interface Post {
   icon: typeof Megaphone;
   likes: number;
   comments: string[];
+  /** Foto do post (arquivo em public/feed/). Se ausente ou não encontrada, o post fica só com texto. */
+  image?: string;
 }
 
 const initialPosts: Post[] = [
@@ -79,6 +81,8 @@ export default function FeedPage() {
   const [openComments, setOpenComments] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [nextId, setNextId] = useState(100);
+  // Fotos que falharam ao carregar (arquivo ainda não está em public/feed/).
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
   const toggleLike = (id: string) => {
     setLiked((prev) => {
@@ -201,6 +205,23 @@ export default function FeedPage() {
               <p className="whitespace-pre-line px-4 py-3 text-sm leading-relaxed text-arena-ink">
                 {post.text}
               </p>
+
+              {/* Foto (estilo Instagram) */}
+              {post.image && !brokenImages.has(post.image) && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.image}
+                  alt="Foto da publicação"
+                  className="max-h-[480px] w-full bg-black object-cover"
+                  onError={() =>
+                    setBrokenImages((prev) => {
+                      const next = new Set(prev);
+                      next.add(post.image!);
+                      return next;
+                    })
+                  }
+                />
+              )}
 
               {/* Actions */}
               <div className="flex items-center gap-4 border-t border-arena-border px-4 py-2.5">
