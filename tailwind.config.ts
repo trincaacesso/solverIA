@@ -32,11 +32,11 @@ const config: Config = {
           green: "#16a34a",
           yellow: "#ca8a04",
           red: "#dc2626",
-          bg: "#f7f5fc",
+          bg: "#efe7fc",
           card: "#ffffff",
           ink: "#241b3d",
           muted: "#6f6890",
-          border: "#e5dff2",
+          border: "#ddd0f2",
         },
       },
       fontFamily: {

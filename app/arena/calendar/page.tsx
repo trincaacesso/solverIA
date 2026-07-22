@@ -288,24 +288,11 @@ export default function CalendarPage() {
           const dayClasses = classes
             .filter((c) => isSameDay(parseISODate(c.date), day))
             .sort((a, b) => a.time.localeCompare(b.time));
-          const isToday = isSameDay(day, today);
           return (
             <div key={day.toISOString()} className="flex flex-col">
-              <div
-                className={cn(
-                  "mb-2 rounded-md py-2 text-center",
-                  isToday ? "bg-arena-blue text-white" : "text-arena-muted",
-                )}
-              >
-                <span className="text-xs font-semibold">{weekdayShort(day)}</span>
-                <span
-                  className={cn(
-                    "block text-lg font-bold",
-                    isToday ? "text-white" : "text-arena-ink",
-                  )}
-                >
-                  {dayOfMonth(day)}
-                </span>
+              {/* Rótulo do dia só no mobile (no desktop a faixa de dias acima já identifica as colunas) */}
+              <div className="mb-2 text-center text-sm font-semibold text-arena-muted lg:hidden">
+                {weekdayShort(day)} {dayOfMonth(day)}
               </div>
               <div className="flex-1 space-y-2 rounded-lg border border-arena-border bg-arena-card p-2 shadow-sm transition-shadow duration-200 hover:shadow-md lg:min-h-[220px]">
                 {dayClasses.length === 0 ? (
