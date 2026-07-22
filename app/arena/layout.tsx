@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { DashboardLayout } from "@/components/arena/dashboard-layout";
 
 export const metadata: Metadata = {
-  title: "Arena Futevôlei OS",
-  description: "Sistema de gestão para arenas de futevôlei.",
+  title: "CT VH Futevôlei",
+  description: "Sistema de gestão do CT VH — futevôlei.",
 };
 
 export default function ArenaLayout({
