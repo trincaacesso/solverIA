@@ -1,0 +1,58 @@
+// Alunos do CT VH — usado na Gestão de Alunos e no login.
+// Turma atribuída a partir das listas de treino; "—" = a definir.
+
+export interface RosterEntry {
+  name: string;
+  turma: string;
+}
+
+export const ROSTER: RosterEntry[] = [
+  { name: "Acacio", turma: "Pré-Elite" },
+  { name: "Aline", turma: "Iniciante" },
+  { name: "Amanda Pereira", turma: "Iniciante" },
+  { name: "Ana Beatriz", turma: "Aprendiz" },
+  { name: "Ana Clara", turma: "Iniciante" },
+  { name: "Ana Luisa", turma: "Iniciante" },
+  { name: "Anderson Luis", turma: "—" },
+  { name: "Andressa Gomes", turma: "—" },
+  { name: "Anna Julia", turma: "Iniciante" },
+  { name: "Bernardo Duarte", turma: "Elite B" },
+  { name: "Brendon", turma: "Iniciante" },
+  { name: "Camila Rodrigues", turma: "Feminino Avançado" },
+  { name: "Cecilia Gramschelli", turma: "Feminino" },
+  { name: "Cindya", turma: "Aprendiz" },
+  { name: "Clarckson Marques", turma: "Iniciante" },
+  { name: "Daniel Alves", turma: "—" },
+  { name: "Daniel Lages", turma: "—" },
+  { name: "Daniel Silva Baia", turma: "Pré-Elite" },
+  { name: "David Madalena", turma: "—" },
+  { name: "David Silva", turma: "Elite B" },
+  { name: "Eduarda Marques", turma: "Aprendiz" },
+  { name: "Enzo Felipe", turma: "Elite B" },
+  { name: "Enzo Neves", turma: "Pré-Elite" },
+  { name: "Ericky", turma: "Elite B" },
+  { name: "Francielle", turma: "Feminino Avançado" },
+  { name: "Gabriel Avelino (Caixa)", turma: "Iniciante" },
+  { name: "Giovanna Teixeira", turma: "—" },
+  { name: "Guilherme Almeida", turma: "Aprendiz" },
+  { name: "Guilherme Pereira", turma: "—" },
+  { name: "Hugo Oliveira", turma: "Aprendiz" },
+  { name: "Jotinha", turma: "Aprendiz" },
+  { name: "Karla Thais", turma: "Iniciante" },
+  { name: "Kauã Martins", turma: "Elite B" },
+  { name: "Lara Grazielle", turma: "Aprendiz" },
+  { name: "Laura", turma: "—" },
+  { name: "Livia Eduarda", turma: "Aprendiz" },
+  { name: "Mariana Fagundes", turma: "Feminino Avançado" },
+  { name: "Nicolas Taylor", turma: "Iniciante" },
+  { name: "Pedro Dias", turma: "Pré-Elite" },
+  { name: "Pedro Henrique", turma: "Aprendiz" },
+  { name: "Phillip Maximo", turma: "—" },
+  { name: "Ruivo", turma: "Aprendiz" },
+  { name: "Ryan Pablo", turma: "—" },
+  { name: "Victor Gabriel", turma: "Elite B" },
+  { name: "Vinicius Lacerda", turma: "Elite B" },
+  { name: "Yasmin Lawrence", turma: "Feminino Avançado" },
+  { name: "Yasmin Silva", turma: "Aprendiz" },
+  { name: "Yuri Victor", turma: "—" },
+];

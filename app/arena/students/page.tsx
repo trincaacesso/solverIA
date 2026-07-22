@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Search, UserPlus, Phone, Mail, Pencil, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROSTER } from "@/lib/arena-students";
+import { useAuth } from "@/components/arena/auth-context";
 
 type Status = "Ativo" | "Inadimplente" | "Inativo";
 type Plan = "Mensal" | "Trimestral" | "Anual" | "Avulso";
@@ -29,70 +31,17 @@ const TURMAS = [
   "Feminino Avançado",
 ];
 
-// Turma atribuída a partir das listas de treino; "—" = a definir.
+// Roster compartilhado (lib/arena-students.ts) — também usado no login.
 // Contato ainda não informado (plano padrão: Mensal).
-function aluno(id: number, name: string, level: string): Student {
-  return {
-    id: String(id),
-    name,
-    email: "",
-    phone: "",
-    plan: "Mensal",
-    level,
-    status: "Ativo",
-  };
-}
-
-const initialStudents: Student[] = [
-  aluno(1, "Acacio", "Pré-Elite"),
-  aluno(2, "Aline", "Iniciante"),
-  aluno(3, "Amanda Pereira", "Iniciante"),
-  aluno(4, "Ana Beatriz", "Aprendiz"),
-  aluno(5, "Ana Clara", "Iniciante"),
-  aluno(6, "Ana Luisa", "Iniciante"),
-  aluno(7, "Anderson Luis", "—"),
-  aluno(8, "Andressa Gomes", "—"),
-  aluno(9, "Anna Julia", "Iniciante"),
-  aluno(10, "Bernardo Duarte", "Elite B"),
-  aluno(11, "Brendon", "Iniciante"),
-  aluno(12, "Camila Rodrigues", "Feminino Avançado"),
-  aluno(13, "Cecilia Gramschelli", "Feminino"),
-  aluno(14, "Cindya", "Aprendiz"),
-  aluno(15, "Clarckson Marques", "Iniciante"),
-  aluno(16, "Daniel Alves", "—"),
-  aluno(17, "Daniel Lages", "—"),
-  aluno(18, "Daniel Silva Baia", "Pré-Elite"),
-  aluno(19, "David Madalena", "—"),
-  aluno(20, "David Silva", "Elite B"),
-  aluno(21, "Eduarda Marques", "Aprendiz"),
-  aluno(22, "Enzo Felipe", "Elite B"),
-  aluno(23, "Enzo Neves", "Pré-Elite"),
-  aluno(24, "Ericky", "Elite B"),
-  aluno(25, "Francielle", "Feminino Avançado"),
-  aluno(26, "Gabriel Avelino (Caixa)", "Iniciante"),
-  aluno(27, "Giovanna Teixeira", "—"),
-  aluno(28, "Guilherme Almeida", "Aprendiz"),
-  aluno(29, "Guilherme Pereira", "—"),
-  aluno(30, "Hugo Oliveira", "Aprendiz"),
-  aluno(31, "Jotinha", "Aprendiz"),
-  aluno(32, "Karla Thais", "Iniciante"),
-  aluno(33, "Kauã Martins", "Elite B"),
-  aluno(34, "Lara Grazielle", "Aprendiz"),
-  aluno(35, "Laura", "—"),
-  aluno(36, "Livia Eduarda", "Aprendiz"),
-  aluno(37, "Mariana Fagundes", "Feminino Avançado"),
-  aluno(38, "Nicolas Taylor", "Iniciante"),
-  aluno(39, "Pedro Dias", "Pré-Elite"),
-  aluno(40, "Pedro Henrique", "Aprendiz"),
-  aluno(41, "Phillip Maximo", "—"),
-  aluno(42, "Ruivo", "Aprendiz"),
-  aluno(43, "Ryan Pablo", "—"),
-  aluno(44, "Victor Gabriel", "Elite B"),
-  aluno(45, "Vinicius Lacerda", "Elite B"),
-  aluno(46, "Yasmin Lawrence", "Feminino Avançado"),
-  aluno(47, "Yasmin Silva", "Aprendiz"),
-  aluno(48, "Yuri Victor", "—"),
-];
+const initialStudents: Student[] = ROSTER.map((entry, i) => ({
+  id: String(i + 1),
+  name: entry.name,
+  email: "",
+  phone: "",
+  plan: "Mensal",
+  level: entry.turma,
+  status: "Ativo",
+}));
 
 const statusStyles: Record<Status, string> = {
   Ativo: "bg-arena-green/15 text-arena-green",
@@ -131,6 +80,8 @@ const emptyForm: StudentForm = {
 };
 
 export default function StudentsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [query, setQuery] = useState("");
   // editingId: null = modal fechado, "new" = novo aluno, senão = id em edição.
@@ -205,13 +156,15 @@ export default function StudentsPage() {
             Acompanhe matrículas, planos e status dos alunos.
           </p>
         </div>
-        <button
-          onClick={openNew}
-          className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
-        >
-          <UserPlus className="h-5 w-5" />
-          Novo Aluno
-        </button>
+        {isAdmin && (
+          <button
+            onClick={openNew}
+            className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
+          >
+            <UserPlus className="h-5 w-5" />
+            Novo Aluno
+          </button>
+        )}
       </div>
 
       {/* Stats */}
@@ -249,7 +202,7 @@ export default function StudentsPage() {
                 <th className="px-4 py-3 font-semibold">Plano</th>
                 <th className="px-4 py-3 font-semibold">Turma</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Ações</th>
+                {isAdmin && <th className="px-4 py-3 font-semibold">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-arena-border">
@@ -295,21 +248,23 @@ export default function StudentsPage() {
                       {s.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => openEdit(s)}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-arena-border px-2.5 py-1.5 text-xs font-semibold text-arena-ink transition-colors hover:border-arena-blue hover:text-arena-blue"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      Editar
-                    </button>
-                  </td>
+                  {isAdmin && (
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => openEdit(s)}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-arena-border px-2.5 py-1.5 text-xs font-semibold text-arena-ink transition-colors hover:border-arena-blue hover:text-arena-blue"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Editar
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={isAdmin ? 6 : 5}
                     className="px-4 py-8 text-center text-arena-muted"
                   >
                     Nenhum aluno encontrado.
@@ -322,7 +277,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Student modal (novo / edição) */}
-      {editingId !== null && (
+      {isAdmin && editingId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/60"

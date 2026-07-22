@@ -14,17 +14,19 @@ import {
   Zap,
   BarChart3,
   Newspaper,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/arena/auth-context";
 
 const navigation = [
-  { name: "Calendário de Aulas", href: "/arena/calendar", icon: CalendarDays },
-  { name: "Feed", href: "/arena/feed", icon: Newspaper },
-  { name: "Gestão de Alunos", href: "/arena/students", icon: Users },
-  { name: "Financeiro", href: "/arena/finance", icon: DollarSign },
-  { name: "Relatório Mensal", href: "/arena/report", icon: BarChart3 },
-  { name: "CEFFLASH", href: "/arena/cefflash", icon: Zap },
-  { name: "Configurações", href: "/arena/settings", icon: Settings },
+  { name: "Calendário de Aulas", href: "/arena/calendar", icon: CalendarDays, adminOnly: false },
+  { name: "Feed", href: "/arena/feed", icon: Newspaper, adminOnly: false },
+  { name: "Gestão de Alunos", href: "/arena/students", icon: Users, adminOnly: true },
+  { name: "Financeiro", href: "/arena/finance", icon: DollarSign, adminOnly: true },
+  { name: "Relatório Mensal", href: "/arena/report", icon: BarChart3, adminOnly: true },
+  { name: "CEFFLASH", href: "/arena/cefflash", icon: Zap, adminOnly: false },
+  { name: "Configurações", href: "/arena/settings", icon: Settings, adminOnly: true },
 ];
 
 // Recriação em SVG da logo VH (raio entre o V e o H, roxo sobre preto).
@@ -103,9 +105,13 @@ function Brand() {
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const items = navigation.filter(
+    (item) => !item.adminOnly || user?.role === "admin",
+  );
   return (
     <nav className="flex-1 space-y-1 px-2 py-4">
-      {navigation.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.href;
         return (
           <Link
@@ -128,8 +134,28 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/**
+ * Casca visual da área /arena: página de login sem sidebar,
+ * demais páginas com o dashboard completo.
+ */
+export function ArenaChrome({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  if (pathname === "/arena/login") return <>{children}</>;
+  return <DashboardLayout>{children}</DashboardLayout>;
+}
+
+function userInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-arena-bg text-arena-ink">
@@ -194,13 +220,23 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-arena-ink">
-                Admin
+                {user?.displayName ?? ""}
               </p>
-              <p className="text-xs text-arena-muted">Gestor da Arena</p>
+              <p className="text-xs text-arena-muted">
+                {user?.role === "admin" ? "Administrador" : "Aluno"}
+              </p>
             </div>
-            <span className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-arena-blue text-sm font-semibold text-white transition-transform duration-200 hover:scale-110">
-              AD
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-arena-blue text-sm font-semibold text-white">
+              {user ? userInitials(user.displayName) : "?"}
             </span>
+            <button
+              onClick={logout}
+              className="rounded-md p-2 text-arena-muted transition-colors hover:bg-arena-red/10 hover:text-arena-red"
+              aria-label="Sair"
+              title="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
           </div>
         </header>
 

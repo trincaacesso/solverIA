@@ -22,6 +22,7 @@ import {
   longDate,
 } from "@/lib/arena-date";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/arena/auth-context";
 
 type Level = "Iniciante" | "Intermediário" | "Avançado";
 
@@ -91,6 +92,8 @@ interface NewClassForm {
 }
 
 export default function CalendarPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [anchor, setAnchor] = useState(() => new Date());
   const [classes, setClasses] = useState<ClassData[]>(() => buildClasses());
   const [showForm, setShowForm] = useState(false);
@@ -170,17 +173,20 @@ export default function CalendarPage() {
             Calendário de Aulas
           </h1>
           <p className="mt-1 text-sm text-arena-muted">
-            Clique em uma aula para ver a lista de alunos. Use “Nova Aula” para
-            adicionar e passe o mouse sobre uma aula para removê-la.
+            {isAdmin
+              ? "Clique em uma aula para ver a lista de alunos. Use “Nova Aula” para adicionar e passe o mouse sobre uma aula para removê-la."
+              : "Clique em um dia para filtrar e em uma aula para ver a lista de alunos."}
           </p>
         </div>
-        <button
-          onClick={openForm}
-          className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
-        >
-          <PlusCircle className="h-5 w-5" />
-          Nova Aula
-        </button>
+        {isAdmin && (
+          <button
+            onClick={openForm}
+            className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
+          >
+            <PlusCircle className="h-5 w-5" />
+            Nova Aula
+          </button>
+        )}
       </div>
 
       {/* Week navigation */}
@@ -322,16 +328,18 @@ export default function CalendarPage() {
                           levelStyles[cls.level],
                         )}
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeClass(cls.id);
-                          }}
-                          className="absolute right-1.5 top-1.5 rounded p-0.5 text-arena-muted opacity-0 transition-opacity hover:bg-arena-red/20 hover:text-arena-red group-hover:opacity-100"
-                          aria-label="Remover aula"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeClass(cls.id);
+                            }}
+                            className="absolute right-1.5 top-1.5 rounded p-0.5 text-arena-muted opacity-0 transition-opacity hover:bg-arena-red/20 hover:text-arena-red group-hover:opacity-100"
+                            aria-label="Remover aula"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                         <p className="pr-4 font-semibold text-arena-ink">
                           {cls.name}
                         </p>
@@ -426,7 +434,7 @@ export default function CalendarPage() {
       )}
 
       {/* New class modal */}
-      {showForm && (
+      {isAdmin && showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/60"

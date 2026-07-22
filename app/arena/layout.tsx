@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { DashboardLayout } from "@/components/arena/dashboard-layout";
+import { ArenaChrome } from "@/components/arena/dashboard-layout";
+import { AuthProvider, RequireAuth } from "@/components/arena/auth-context";
 
 export const metadata: Metadata = {
   title: "CT VH Futevôlei",
@@ -11,5 +12,11 @@ export default function ArenaLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <AuthProvider>
+      <RequireAuth>
+        <ArenaChrome>{children}</ArenaChrome>
+      </RequireAuth>
+    </AuthProvider>
+  );
 }
