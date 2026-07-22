@@ -10,6 +10,8 @@ import {
   Users,
   CheckCircle2,
   MessageCircle,
+  PanelRightClose,
+  PanelRightOpen,
   X,
 } from "lucide-react";
 import {
@@ -142,6 +144,8 @@ export default function CalendarPage() {
   const [selected, setSelected] = useState<ClassData | null>(null);
   // Dia selecionado (yyyy-MM-dd) para filtrar as aulas; null = semana toda.
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  // Painel lateral "Lista do dia" (recolhível).
+  const [showDayList, setShowDayList] = useState(true);
   const [nextId, setNextId] = useState(100);
 
   const weekStart = startOfWeek(anchor);
@@ -162,6 +166,21 @@ export default function CalendarPage() {
   const toggleDay = (day: Date) => {
     const iso = toISODate(day);
     setSelectedDay((prev) => (prev === iso ? null : iso));
+  };
+
+  // Dia exibido no painel lateral: o selecionado, ou hoje.
+  const panelDay = selectedDay ? parseISODate(selectedDay) : today;
+  const panelClasses = classes
+    .filter((c) => isSameDay(parseISODate(c.date), panelDay))
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  const sendWhatsAppList = () => {
+    const text = buildWhatsAppList(panelDay, classes);
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   const emptyForm: NewClassForm = {
@@ -223,15 +242,7 @@ export default function CalendarPage() {
         {isAdmin && (
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => {
-                const day = selectedDay ? parseISODate(selectedDay) : today;
-                const text = buildWhatsAppList(day, classes);
-                window.open(
-                  `https://wa.me/?text=${encodeURIComponent(text)}`,
-                  "_blank",
-                  "noopener,noreferrer",
-                );
-              }}
+              onClick={sendWhatsAppList}
               title="Monta a lista do dia selecionado (ou de hoje) e abre o WhatsApp com a mensagem pronta"
               className="inline-flex items-center gap-2 rounded-md bg-arena-green px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:opacity-90 active:scale-95"
             >
@@ -335,13 +346,36 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* Toggle do painel lateral */}
+      <div className="mb-3 flex justify-end">
+        <button
+          onClick={() => setShowDayList((v) => !v)}
+          className="inline-flex items-center gap-1.5 rounded-md border border-arena-border bg-arena-card px-3 py-1.5 text-xs font-semibold text-arena-ink transition-colors hover:border-arena-blue hover:text-arena-blue"
+        >
+          {showDayList ? (
+            <>
+              <PanelRightClose className="h-4 w-4" />
+              Ocultar lista do dia
+            </>
+          ) : (
+            <>
+              <PanelRightOpen className="h-4 w-4" />
+              Mostrar lista do dia
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
       {/* Week grid */}
       <div
         className={cn(
-          "grid gap-3",
+          "grid flex-1 gap-3",
           selectedDay
             ? "grid-cols-1"
-            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-7",
+            : showDayList
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-7",
         )}
       >
         {visibleDays.map((day) => {
@@ -419,6 +453,94 @@ export default function CalendarPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Painel lateral: quem treina em cada aula do dia */}
+      {showDayList && (
+        <aside className="w-full shrink-0 lg:w-80">
+          <div className="overflow-hidden rounded-lg border border-arena-border bg-arena-card shadow-sm">
+            <div className="border-b border-arena-border bg-arena-blue px-4 py-3">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+                <Users className="h-4 w-4" />
+                Lista do dia — {weekdayShort(panelDay)} {dayOfMonth(panelDay)}
+              </h2>
+              <p className="mt-0.5 text-xs text-white/80">
+                {selectedDay
+                  ? "Dia selecionado no calendário"
+                  : "Hoje (selecione outro dia para trocar)"}
+              </p>
+            </div>
+
+            {panelClasses.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-arena-muted">
+                Sem aulas neste dia.
+              </p>
+            ) : (
+              <div className="max-h-[540px] divide-y divide-arena-border overflow-y-auto">
+                {panelClasses.map((cls) => {
+                  const confirmed = cls.students.filter(
+                    (st) => st.confirmed,
+                  ).length;
+                  return (
+                    <div key={cls.id} className="px-4 py-3">
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <p className="text-sm font-bold text-arena-ink">
+                          {timeLabel(cls.time)} — {cls.name}
+                        </p>
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 text-xs font-semibold",
+                            confirmed === cls.students.length &&
+                              cls.students.length > 0
+                              ? "bg-arena-green/15 text-arena-green"
+                              : "bg-arena-blue/10 text-arena-blue",
+                          )}
+                        >
+                          {confirmed}/{cls.students.length} ✓
+                        </span>
+                      </div>
+                      {cls.students.length === 0 ? (
+                        <p className="text-xs text-arena-muted">Livre</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {cls.students.map((st) => (
+                            <li
+                              key={st.name}
+                              className="flex items-center gap-1.5 text-xs text-arena-ink"
+                            >
+                              {st.confirmed ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-arena-green" />
+                              ) : (
+                                <Clock className="h-3.5 w-3.5 shrink-0 text-arena-orange" />
+                              )}
+                              {st.name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {isAdmin && (
+              <div className="border-t border-arena-border p-3">
+                <button
+                  onClick={sendWhatsAppList}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-arena-green px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Enviar lista no WhatsApp
+                </button>
+                <p className="mt-1.5 text-center text-[11px] text-arena-muted">
+                  Abre o WhatsApp com a lista pronta — é só escolher o grupo.
+                </p>
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
       </div>
 
       {/* Class detail modal — student list */}
