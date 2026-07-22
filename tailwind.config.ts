@@ -24,19 +24,19 @@ const config: Config = {
           cyan: "#22d3ee",
           blue: "#3b82f6",
         },
-        // CT VH — dark dashboard palette
+        // CT VH — paleta preto e roxo (baseada na logo)
         arena: {
-          blue: "#3b82f6",
-          "blue-dark": "#2563eb",
+          blue: "#8b5cf6",
+          "blue-dark": "#7c3aed",
           orange: "#FF6B35",
           green: "#22c55e",
           yellow: "#eab308",
           red: "#f87171",
-          bg: "#0b1120",
-          card: "#151c2e",
-          ink: "#e5e9f0",
-          muted: "#94a3b8",
-          border: "#26314b",
+          bg: "#0a0613",
+          card: "#150e26",
+          ink: "#ece7f7",
+          muted: "#a396c4",
+          border: "#2d2148",
         },
       },
       fontFamily: {

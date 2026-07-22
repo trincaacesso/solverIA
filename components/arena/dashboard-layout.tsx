@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   Search,
-  Trophy,
   Zap,
   BarChart3,
   Newspaper,
@@ -28,14 +27,58 @@ const navigation = [
   { name: "Configurações", href: "/arena/settings", icon: Settings },
 ];
 
+// Recriação em SVG da logo VH (raio entre o V e o H, roxo sobre preto).
+// Usada enquanto public/logo-ctvh.png não existir.
+function LogoVH() {
+  return (
+    <svg viewBox="0 0 64 64" className="h-9 w-9" aria-hidden="true">
+      <rect width="64" height="64" rx="12" fill="#050308" />
+      <text
+        x="5"
+        y="45"
+        fontFamily="Arial Black, Arial, sans-serif"
+        fontStyle="italic"
+        fontWeight="900"
+        fontSize="34"
+        fill="#7c3aed"
+      >
+        V
+      </text>
+      <text
+        x="31"
+        y="45"
+        fontFamily="Arial Black, Arial, sans-serif"
+        fontStyle="italic"
+        fontWeight="900"
+        fontSize="34"
+        fill="#8b5cf6"
+      >
+        H
+      </text>
+      <polygon
+        points="38,8 26,32 32,32 27,56 42,29 35,29"
+        fill="#8b5cf6"
+        stroke="#050308"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M10 53 H54"
+        stroke="#7c3aed"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function Brand() {
-  // Logo oficial em public/logo-ctvh.png; se ausente, cai no ícone padrão.
+  // Logo oficial em public/logo-ctvh.png; se ausente, usa a versão SVG.
   const [logoFailed, setLogoFailed] = useState(false);
   return (
     <div className="flex items-center gap-2.5">
       {logoFailed ? (
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-arena-blue text-white">
-          <Trophy className="h-5 w-5" />
+        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-black">
+          <LogoVH />
         </span>
       ) : (
         <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-black">
