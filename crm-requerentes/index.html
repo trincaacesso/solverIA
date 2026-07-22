@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CRM Requerentes — Passaporte Italiano</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111c33; --panel2:#16233f; --line:#24324f;
+    --txt:#e6edf7; --muted:#93a4c2; --accent:#3b82f6; --accent2:#2563eb;
+    --green:#22c55e; --amber:#f59e0b; --red:#ef4444; --violet:#8b5cf6;
+    --chip:#1e2b48;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--txt); font-size:14px;
+  }
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit}
+  .app{max-width:1200px;margin:0 auto;padding:20px 20px 60px}
+  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .logo h1{font-size:17px;margin:0;line-height:1.1}
+  .logo p{margin:0;font-size:11.5px;color:var(--muted)}
+  .spacer{flex:1}
+  .btn{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{border-color:#3a4c72}
+  .btn.primary{background:var(--accent2);border-color:var(--accent2)}
+  .btn.primary:hover{background:var(--accent)}
+  .btn.ghost{background:transparent}
+  .btn.danger{color:#fca5a5;border-color:#5b2530;background:#2a141a}
+  .btn.danger:hover{background:#3a1a22}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .n{font-size:26px;font-weight:700;line-height:1}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:6px}
+  .stat.aguardando .n{color:var(--amber)}
+  .stat.agendado .n{color:var(--green)}
+  .stat.compareceu .n{color:var(--violet)}
+
+  /* toolbar */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;padding:10px 12px 10px 36px;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:13px}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+  select.filter{padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:13px}
+
+  /* table */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;background:var(--panel2)}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:var(--panel2)}
+  tbody tr:last-child td{border-bottom:none}
+  .who{font-weight:600}
+  .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .b-aguardando{color:var(--amber);background:#3a2c10}
+  .b-agendado{color:var(--green);background:#0f3320}
+  .b-compareceu{color:var(--violet);background:#241a42}
+  .b-cancelado{color:var(--muted);background:#22293a}
+  .empty{padding:56px 20px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:34px;margin-bottom:10px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(4,8,18,.72);display:none;align-items:flex-start;justify-content:center;padding:34px 16px;overflow:auto;z-index:50}
+  .overlay.open{display:flex}
+  .modal{width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  .modal .mh{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .modal .mh h2{margin:0;font-size:16px}
+  .modal .mb{padding:20px;max-height:66vh;overflow:auto}
+  .modal .mf{display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);background:var(--panel2)}
+  .x{margin-left:auto;background:transparent;border:none;color:var(--muted);font-size:22px;line-height:1;padding:2px 6px}
+  .x:hover{color:#fff}
+
+  /* form */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid .full{grid-column:1/-1}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:13px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+  .field textarea{resize:vertical;min-height:64px}
+  .section-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:20px 0 10px;grid-column:1/-1;border-top:1px solid var(--line);padding-top:16px}
+  .section-title:first-child{border-top:none;padding-top:0;margin-top:0}
+
+  /* detail copy rows */
+  .drow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .drow:last-child{border-bottom:none}
+  .drow .dl{width:150px;flex-shrink:0;color:var(--muted);font-size:12px}
+  .drow .dv{flex:1;font-size:13.5px;word-break:break-word}
+  .copy{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:7px;padding:5px 10px;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+  .copy:hover{color:#fff;border-color:var(--accent)}
+  .copy.done{color:var(--green);border-color:var(--green)}
+  .copyall{width:100%;justify-content:center;margin-top:14px;padding:11px}
+  .hint{font-size:12px;color:var(--muted);background:#12203a;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:14px;line-height:1.5}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#0f3320;border:1px solid var(--green);color:#bbf7d0;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.25s;z-index:100;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* alarm bar */
+  .alarm{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:18px}
+  .alarm.armed{border-color:var(--amber);background:#1a1608}
+  .alarm.fired{border-color:var(--green);background:#0d2a1b;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{border-color:var(--green)}50%{border-color:#4ade80}}
+  .alarm .clock{font-size:13px;color:var(--muted)}
+  .alarm .cd{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;letter-spacing:.02em}
+  .alarm .cd.soon{color:var(--amber)}
+  .alarm .cd.now{color:var(--green)}
+  .alarm .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .alarm input[type=time]{padding:7px 9px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:13px}
+  .switch{position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;font-weight:600}
+  .switch input{display:none}
+  .switch .track{width:42px;height:24px;background:#33415c;border-radius:999px;position:relative;transition:.2s}
+  .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .track{background:var(--green)}
+  .switch input:checked + .track::after{transform:translateX(18px)}
+
+  @media(max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+    .hide-sm{display:none}
+    .drow .dl{width:110px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo">
+      <div class="mark">🇮🇹</div>
+      <div>
+        <h1>CRM Requerentes</h1>
+        <p>Passaporte italiano — organização &amp; preenchimento rápido</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btnImport">Importar</button>
+    <button class="btn ghost" id="btnExport">Exportar backup</button>
+    <button class="btn primary" id="btnNew">+ Novo requerente</button>
+  </header>
+
+  <div class="alarm" id="alarm">
+    <div>
+      <div class="lbl">Abertura das vagas</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+        <input type="time" id="alarmTime" value="16:00" />
+      </div>
+    </div>
+    <div style="min-width:150px">
+      <div class="lbl" id="cdLabel">Faltam para abrir</div>
+      <div class="cd" id="countdown">--:--:--</div>
+    </div>
+    <div class="clock" id="liveClock"></div>
+    <div class="spacer"></div>
+    <label class="switch">
+      <input type="checkbox" id="alarmOn" />
+      <span class="track"></span>
+      <span id="alarmOnLabel">Ativar alerta</span>
+    </label>
+    <button class="btn ghost" id="btnTestAlarm" title="Testar som e notificação">Testar</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">Total de requerentes</div></div>
+    <div class="stat aguardando"><div class="n" id="s-aguardando">0</div><div class="l">Aguardando vaga</div></div>
+    <div class="stat agendado"><div class="n" id="s-agendado">0</div><div class="l">Agendados</div></div>
+    <div class="stat compareceu"><div class="n" id="s-compareceu">0</div><div class="l">Compareceram</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" placeholder="Buscar por nome, CPF, telefone…" />
+    </div>
+    <select class="filter" id="filter">
+      <option value="">Todos os status</option>
+      <option value="aguardando">Aguardando vaga</option>
+      <option value="agendado">Agendado</option>
+      <option value="compareceu">Compareceu</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Requerente</th>
+          <th class="hide-sm">CPF</th>
+          <th class="hide-sm">Nascimento</th>
+          <th class="hide-sm">Telefone</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">
+      <div class="big">📋</div>
+      <div>Nenhum requerente ainda.</div>
+      <div style="margin-top:6px">Clique em <b>+ Novo requerente</b> para começar.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="mh">
+      <h2 id="formTitle">Novo requerente</h2>
+      <button class="x" data-close>&times;</button>
+    </div>
+    <div class="mb">
+      <form id="form">
+        <div class="grid">
+          <div class="section-title">Dados pessoais</div>
+          <div class="field full"><label>Nome completo *</label><input name="nome" required /></div>
+          <div class="field"><label>CPF</label><input name="cpf" placeholder="000.000.000-00" /></div>
+          <div class="field"><label>RG / Doc. identidade</label><input name="rg" placeholder="0000000 ÓRGÃO/UF" /></div>
+          <div class="field"><label>Data de nascimento</label><input name="nascimento" placeholder="DD/MM/AAAA" /></div>
+          <div class="field"><label>Local de nascimento (cidade/UF/país)</label><input name="localNascimento" placeholder="São Paulo, SP, Brasil" /></div>
+          <div class="field"><label>Sexo</label>
+            <select name="sexo"><option value="">—</option><option>Feminino</option><option>Masculino</option></select>
+          </div>
+          <div class="field"><label>Nacionalidade</label><input name="nacionalidade" placeholder="Italiana / Brasileira" /></div>
+          <div class="field"><label>Estado civil</label>
+            <select name="estadoCivil">
+              <option value="">—</option>
+              <option>Solteiro(a)</option><option>Casado(a)</option>
+              <option>Divorciado(a)</option><option>Viúvo(a)</option>
+            </select>
+          </div>
+          <div class="field"><label>Nome do pai</label><input name="pai" /></div>
+          <div class="field"><label>Nome da mãe</label><input name="mae" /></div>
+          <div class="field"><label>Altura</label><input name="altura" placeholder="1,55" /></div>
+          <div class="field"><label>Cor dos olhos</label><input name="olhos" placeholder="Verdes" /></div>
+
+          <div class="section-title">Contato</div>
+          <div class="field"><label>Telefone / WhatsApp</label><input name="telefone" /></div>
+          <div class="field"><label>E-mail</label><input name="email" /></div>
+
+          <div class="section-title">Endereço</div>
+          <div class="field full"><label>Logradouro (rua/av.)</label><input name="rua" /></div>
+          <div class="field"><label>Número</label><input name="numero" /></div>
+          <div class="field"><label>Bairro</label><input name="bairro" /></div>
+          <div class="field"><label>Cidade</label><input name="cidade" value="São Paulo" /></div>
+          <div class="field"><label>UF</label><input name="uf" value="SP" /></div>
+          <div class="field"><label>CEP</label><input name="cep" placeholder="00000-000" /></div>
+
+          <div class="section-title">Prenotami &amp; agendamento</div>
+          <div class="field"><label>E-mail de login Prenotami</label><input name="prenotamiUser" /></div>
+          <div class="field"><label>Status</label>
+            <select name="status">
+              <option value="aguardando">Aguardando vaga</option>
+              <option value="agendado">Agendado</option>
+              <option value="compareceu">Compareceu</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="field"><label>Data do agendamento (se marcado)</label><input name="dataAgendamento" placeholder="DD/MM/AAAA" /></div>
+          <div class="field full"><label>Observações</label><textarea name="obs" placeholder="Comune, AIRE, pendências de documento…"></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="mf">
+      <button class="btn danger" id="btnDelete" style="margin-right:auto;display:none">Excluir</button>
+      <button class="btn ghost" data-close>Cancelar</button>
+      <button class="btn primary" id="btnSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="mh">
+      <h2 id="detailTitle">Requerente</h2>
+      <span id="detailBadge"></span>
+      <button class="x" data-close-detail>&times;</button>
+    </div>
+    <div class="mb">
+      <div class="hint">💡 Clique em <b>Copiar</b> em qualquer campo para colar rápido no formulário do Prenotami. Ou use <b>Copiar tudo</b> no fim.</div>
+      <div id="detailBody"></div>
+      <button class="btn primary copyall" id="btnCopyAll">📋 Copiar tudo (bloco de texto)</button>
+    </div>
+    <div class="mf">
+      <button class="btn ghost" data-close-detail>Fechar</button>
+      <button class="btn" id="btnEditFromDetail">Editar</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="application/json" style="display:none" />
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = "crm_requerentes_v1";
+const $ = s => document.querySelector(s);
+const el = (t,c)=>{const e=document.createElement(t); if(c)e.className=c; return e;};
+
+let data = load();
+let editingId = null;
+let currentDetailId = null;
+
+function load(){
+  try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+function uid(){ return "r"+Math.random().toString(36).slice(2,9)+performance.now().toString(36).replace(".",""); }
+
+const STATUS_LABEL = {aguardando:"Aguardando vaga",agendado:"Agendado",compareceu:"Compareceu",cancelado:"Cancelado"};
+
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1600);
+}
+
+function render(){
+  const q = $("#q").value.trim().toLowerCase();
+  const f = $("#filter").value;
+  const list = data.filter(r=>{
+    if(f && r.status!==f) return false;
+    if(!q) return true;
+    return [r.nome,r.cpf,r.telefone,r.email].filter(Boolean).join(" ").toLowerCase().includes(q);
+  }).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+
+  // stats (over full dataset, not filtered)
+  $("#s-total").textContent = data.length;
+  $("#s-aguardando").textContent = data.filter(r=>r.status==="aguardando").length;
+  $("#s-agendado").textContent = data.filter(r=>r.status==="agendado").length;
+  $("#s-compareceu").textContent = data.filter(r=>r.status==="compareceu").length;
+
+  const tb = $("#rows"); tb.innerHTML="";
+  $("#empty").style.display = list.length ? "none" : "block";
+  for(const r of list){
+    const tr = el("tr");
+    tr.onclick = ()=>openDetail(r.id);
+    tr.innerHTML = `
+      <td><div class="who">${esc(r.nome||"—")}</div><div class="sub">${esc(r.cidade||"")}${r.uf?" / "+esc(r.uf):""}</div></td>
+      <td class="hide-sm">${esc(r.cpf||"—")}</td>
+      <td class="hide-sm">${esc(r.nascimento||"—")}</td>
+      <td class="hide-sm">${esc(r.telefone||"—")}</td>
+      <td><span class="badge b-${r.status||'aguardando'}">${STATUS_LABEL[r.status]||"—"}</span></td>`;
+    tb.appendChild(tr);
+  }
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- form ---------- */
+function openForm(id){
+  editingId = id||null;
+  const r = id ? data.find(x=>x.id===id) : null;
+  $("#formTitle").textContent = r ? "Editar requerente" : "Novo requerente";
+  $("#btnDelete").style.display = r ? "inline-flex" : "none";
+  const form = $("#form"); form.reset();
+  if(r){ for(const k in r){ if(form.elements[k]) form.elements[k].value = r[k]??""; } }
+  else { form.elements.cidade.value="São Paulo"; form.elements.uf.value="SP"; form.elements.status.value="aguardando"; }
+  $("#formOverlay").classList.add("open");
+  setTimeout(()=>form.elements.nome.focus(),50);
+}
+function closeForm(){ $("#formOverlay").classList.remove("open"); editingId=null; }
+
+$("#btnSave").onclick = ()=>{
+  const form = $("#form");
+  if(!form.elements.nome.value.trim()){ form.elements.nome.focus(); toast("Informe o nome"); return; }
+  const obj = {};
+  for(const e of form.elements){ if(e.name) obj[e.name]=e.value.trim(); }
+  if(editingId){
+    const i = data.findIndex(x=>x.id===editingId);
+    data[i] = {...data[i], ...obj};
+  }else{
+    obj.id = uid(); obj.createdAt = new Date().toISOString();
+    data.push(obj);
+  }
+  save(); render(); closeForm(); toast("Salvo ✓");
+};
+
+$("#btnDelete").onclick = ()=>{
+  if(!editingId) return;
+  if(!confirm("Excluir este requerente? Esta ação não pode ser desfeita.")) return;
+  data = data.filter(x=>x.id!==editingId);
+  save(); render(); closeForm(); toast("Excluído");
+};
+
+/* ---------- detail ---------- */
+const DETAIL_FIELDS = [
+  ["Nome completo","nome"],["CPF","cpf"],["RG / Doc.","rg"],["Nascimento","nascimento"],
+  ["Local de nascimento","localNascimento"],["Sexo","sexo"],["Nacionalidade","nacionalidade"],
+  ["Estado civil","estadoCivil"],["Nome do pai","pai"],["Nome da mãe","mae"],
+  ["Altura","altura"],["Cor dos olhos","olhos"],
+  ["Telefone","telefone"],["E-mail","email"],
+  ["Logradouro","rua"],["Número","numero"],["Bairro","bairro"],
+  ["Cidade","cidade"],["UF","uf"],["CEP","cep"],
+  ["Login Prenotami","prenotamiUser"],["Data agendamento","dataAgendamento"],["Observações","obs"],
+];
+
+function openDetail(id){
+  const r = data.find(x=>x.id===id); if(!r) return;
+  currentDetailId = id;
+  $("#detailTitle").textContent = r.nome||"Requerente";
+  $("#detailBadge").innerHTML = `<span class="badge b-${r.status||'aguardando'}">${STATUS_LABEL[r.status]||"—"}</span>`;
+  const body = $("#detailBody"); body.innerHTML="";
+  for(const [label,k] of DETAIL_FIELDS){
+    const v = r[k]; if(!v) continue;
+    const row = el("div","drow");
+    row.innerHTML = `<div class="dl">${label}</div><div class="dv">${esc(v)}</div>`;
+    const btn = el("button","copy"); btn.textContent="Copiar";
+    btn.onclick = ()=>{ copy(v); btn.textContent="Copiado ✓"; btn.classList.add("done"); setTimeout(()=>{btn.textContent="Copiar";btn.classList.remove("done");},1200); };
+    row.appendChild(btn);
+    body.appendChild(row);
+  }
+  $("#detailOverlay").classList.add("open");
+}
+function closeDetail(){ $("#detailOverlay").classList.remove("open"); currentDetailId=null; }
+
+$("#btnCopyAll").onclick = ()=>{
+  const r = data.find(x=>x.id===currentDetailId); if(!r) return;
+  const txt = DETAIL_FIELDS.filter(([l,k])=>r[k]).map(([l,k])=>`${l}: ${r[k]}`).join("\n");
+  copy(txt); toast("Bloco copiado ✓");
+};
+$("#btnEditFromDetail").onclick = ()=>{ const id=currentDetailId; closeDetail(); openForm(id); };
+
+function copy(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).catch(()=>fallbackCopy(text)); }
+  else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta=el("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+/* ---------- import / export ---------- */
+$("#btnExport").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=el("a"); a.href=URL.createObjectURL(blob);
+  a.download = "requerentes-backup-"+new Date().toISOString().slice(0,10)+".json";
+  a.click(); URL.revokeObjectURL(a.href); toast("Backup exportado");
+};
+$("#btnImport").onclick = ()=> $("#fileInput").click();
+$("#fileInput").onchange = (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const imported = JSON.parse(reader.result);
+      if(!Array.isArray(imported)) throw new Error();
+      const existing = new Set(data.map(r=>r.id));
+      let added=0;
+      for(const r of imported){ if(r && r.id && !existing.has(r.id)){ data.push(r); added++; } }
+      save(); render(); toast(added+" requerente(s) importado(s)");
+    }catch(err){ toast("Arquivo inválido"); }
+    $("#fileInput").value="";
+  };
+  reader.readAsText(file);
+};
+
+/* ---------- alarme das 16h ---------- */
+const ALARM_KEY = "crm_alarm_v1";
+let alarmCfg = loadAlarm();
+let firedForToday = null; // "YYYY-MM-DD" já disparado
+
+function loadAlarm(){
+  try{ return Object.assign({on:false,time:"16:00"}, JSON.parse(localStorage.getItem(ALARM_KEY))||{}); }
+  catch(e){ return {on:false,time:"16:00"}; }
+}
+function saveAlarm(){ localStorage.setItem(ALARM_KEY, JSON.stringify(alarmCfg)); }
+
+function nextTarget(){
+  const [h,m] = alarmCfg.time.split(":").map(Number);
+  const now = new Date();
+  const t = new Date(now); t.setHours(h,m,0,0);
+  if(t <= now) t.setDate(t.getDate()+1);
+  return t;
+}
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const seq = [880,1175,880,1175];
+    seq.forEach((f,i)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type="square"; o.frequency.value=f;
+      o.connect(g); g.connect(ctx.destination);
+      const t0=ctx.currentTime + i*0.28;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.25,t0+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.25);
+      o.start(t0); o.stop(t0+0.26);
+    });
+  }catch(e){}
+}
+
+function fireAlarm(){
+  const bar = $("#alarm");
+  bar.classList.remove("armed"); bar.classList.add("fired");
+  beep();
+  if("Notification" in window && Notification.permission==="granted"){
+    const n = new Notification("🔔 Vagas do Prenotami abrindo agora!",{
+      body:"Horário atingido ("+alarmCfg.time+"). Bora agendar — dedo no gatilho!",
+      requireInteraction:true
+    });
+    n.onclick = ()=>{ window.focus(); n.close(); };
+  }
+  toast("⏰ Horário atingido — vagas abrindo!");
+  // re-arma para o próximo dia após 60s de destaque
+  setTimeout(()=>{ if(alarmCfg.on){ bar.classList.remove("fired"); bar.classList.add("armed"); } }, 60000);
+}
+
+function tickAlarm(){
+  const now = new Date();
+  $("#liveClock").textContent = "Agora: "+pad(now.getHours())+":"+pad(now.getMinutes())+":"+pad(now.getSeconds());
+
+  const bar = $("#alarm");
+  if(!alarmCfg.on){
+    bar.classList.remove("armed","fired");
+    $("#countdown").textContent = "--:--:--";
+    $("#countdown").className = "cd";
+    $("#cdLabel").textContent = "Alerta desligado";
+    return;
+  }
+  bar.classList.toggle("armed", !bar.classList.contains("fired"));
+
+  const target = nextTarget();
+  let diff = Math.floor((target - now)/1000);
+
+  // dispara quando bate o horário (janela de 1s), 1x por dia
+  const [h,m] = alarmCfg.time.split(":").map(Number);
+  if(now.getHours()===h && now.getMinutes()===m && now.getSeconds()<=1 && firedForToday!==todayKey()){
+    firedForToday = todayKey();
+    fireAlarm();
+  }
+
+  if(diff<0) diff=0;
+  const hh=Math.floor(diff/3600), mm=Math.floor((diff%3600)/60), ss=diff%60;
+  const cd=$("#countdown");
+  cd.textContent = pad(hh)+":"+pad(mm)+":"+pad(ss);
+  cd.className = "cd" + (diff<=60 ? " now" : diff<=300 ? " soon" : "");
+  $("#cdLabel").textContent = "Faltam para abrir";
+}
+
+async function toggleAlarm(on){
+  alarmCfg.on = on; saveAlarm();
+  $("#alarmOnLabel").textContent = on ? "Alerta ativo" : "Ativar alerta";
+  if(on && "Notification" in window && Notification.permission==="default"){
+    try{ await Notification.requestPermission(); }catch(e){}
+  }
+  if(on && "Notification" in window && Notification.permission==="denied"){
+    toast("Notificação bloqueada — o bip ainda vai tocar");
+  }
+  tickAlarm();
+}
+
+// init alarm UI
+$("#alarmTime").value = alarmCfg.time;
+$("#alarmOn").checked = alarmCfg.on;
+$("#alarmOnLabel").textContent = alarmCfg.on ? "Alerta ativo" : "Ativar alerta";
+$("#alarmOn").onchange = e => toggleAlarm(e.target.checked);
+$("#alarmTime").onchange = e => { alarmCfg.time = e.target.value||"16:00"; firedForToday=null; saveAlarm(); tickAlarm(); };
+$("#btnTestAlarm").onclick = ()=>{
+  if("Notification" in window && Notification.permission==="default") Notification.requestPermission();
+  fireAlarm();
+};
+setInterval(tickAlarm, 1000);
+tickAlarm();
+
+/* ---------- wiring ---------- */
+$("#btnNew").onclick = ()=>openForm();
+$("#q").oninput = render;
+$("#filter").onchange = render;
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeForm);
+document.querySelectorAll("[data-close-detail]").forEach(b=>b.onclick=closeDetail);
+[$("#formOverlay"),$("#detailOverlay")].forEach(o=>o.onclick=e=>{ if(e.target===o){ o.classList.remove("open"); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeForm(); closeDetail(); } });
+
+render();
+</script>
+</body>
+</html>
