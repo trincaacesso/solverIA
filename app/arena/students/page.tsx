@@ -7,7 +7,13 @@ import { ROSTER } from "@/lib/arena-students";
 import { useAuth } from "@/components/arena/auth-context";
 
 type Status = "Ativo" | "Inadimplente" | "Inativo";
-type Plan = "Mensal" | "Trimestral" | "Anual" | "Avulso";
+type Plan =
+  | "Mensal"
+  | "Trimestral"
+  | "Semestral"
+  | "Anual"
+  | "Passe Livre"
+  | "Avulso";
 
 interface Student {
   id: string;
@@ -20,7 +26,14 @@ interface Student {
   status: Status;
 }
 
-const PLANS: Plan[] = ["Mensal", "Trimestral", "Anual", "Avulso"];
+const PLANS: Plan[] = [
+  "Mensal",
+  "Trimestral",
+  "Semestral",
+  "Anual",
+  "Passe Livre",
+  "Avulso",
+];
 const STATUSES: Status[] = ["Ativo", "Inadimplente", "Inativo"];
 const TURMAS = [
   "—",

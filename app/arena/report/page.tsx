@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   DollarSign,
   Users,
@@ -10,8 +13,12 @@ import {
   TrendingUp,
   TrendingDown,
   Trophy,
+  Wallet,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROSTER } from "@/lib/arena-students";
+import { useAuth } from "@/components/arena/auth-context";
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -84,6 +91,17 @@ const ocupacao = [
   { turma: "Misto Aprendiz", pct: 55 },
 ];
 
+// ── Controle de pagamentos ──
+const PAYMENT_METHODS = ["—", "Pix", "Dinheiro", "Cartão", "Transferência"];
+
+interface PaymentInfo {
+  method: string; // forma de pagamento
+  day: string; // dia do mês em que costuma pagar
+  paid: boolean; // já pagou este mês?
+}
+
+const emptyPayment: PaymentInfo = { method: "—", day: "", paid: false };
+
 // ── Destaques do mês ──
 const destaques = [
   "Turma Elite B manteve ocupação acima de 90% pela 3ª vez seguida.",
@@ -93,6 +111,23 @@ const destaques = [
 ];
 
 export default function ReportPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  // Pagamento por aluno (nome → info). Inicia vazio ("—", pendente).
+  const [payments, setPayments] = useState<Record<string, PaymentInfo>>({});
+
+  const getPayment = (name: string) => payments[name] ?? emptyPayment;
+
+  const updatePayment = (name: string, patch: Partial<PaymentInfo>) => {
+    if (!isAdmin) return;
+    setPayments((prev) => ({
+      ...prev,
+      [name]: { ...getPayment(name), ...patch },
+    }));
+  };
+
+  const paidCount = ROSTER.filter((r) => getPayment(r.name).paid).length;
+
   return (
     <div>
       <div className="mb-6">
@@ -209,6 +244,115 @@ export default function ReportPage() {
               </li>
             ))}
           </ul>
+        </div>
+      </div>
+
+      {/* Controle de pagamentos */}
+      <div className="mt-6 overflow-hidden rounded-lg border border-arena-border bg-arena-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-arena-border px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-arena-blue" />
+            <h2 className="text-base font-semibold text-arena-ink">
+              Pagamentos dos alunos
+            </h2>
+          </div>
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+              paidCount === ROSTER.length
+                ? "bg-arena-green/15 text-arena-green"
+                : "bg-arena-orange/15 text-arena-orange",
+            )}
+          >
+            {paidCount}/{ROSTER.length} pagos
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="border-b border-arena-border bg-arena-bg text-xs uppercase tracking-wide text-arena-muted">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Aluno</th>
+                <th className="px-4 py-3 font-semibold">Turma</th>
+                <th className="px-4 py-3 font-semibold">Forma de pagamento</th>
+                <th className="px-4 py-3 font-semibold">Dia que paga</th>
+                <th className="px-4 py-3 font-semibold">Situação do mês</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-arena-border">
+              {ROSTER.map((r) => {
+                const p = getPayment(r.name);
+                return (
+                  <tr
+                    key={r.name}
+                    className="transition-colors hover:bg-arena-bg"
+                  >
+                    <td className="px-4 py-2.5 font-medium text-arena-ink">
+                      {r.name}
+                    </td>
+                    <td className="px-4 py-2.5 text-arena-muted">{r.turma}</td>
+                    <td className="px-4 py-2.5">
+                      <select
+                        disabled={!isAdmin}
+                        value={p.method}
+                        onChange={(e) =>
+                          updatePayment(r.name, { method: e.target.value })
+                        }
+                        className="rounded-md border border-arena-border bg-arena-bg px-2 py-1.5 text-sm text-arena-ink outline-none transition-colors focus:border-arena-blue disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {PAYMENT_METHODS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <input
+                        disabled={!isAdmin}
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="—"
+                        value={p.day}
+                        onChange={(e) =>
+                          updatePayment(r.name, { day: e.target.value })
+                        }
+                        className="w-16 rounded-md border border-arena-border bg-arena-bg px-2 py-1.5 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <button
+                        disabled={!isAdmin}
+                        onClick={() =>
+                          updatePayment(r.name, { paid: !p.paid })
+                        }
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-all duration-150",
+                          p.paid
+                            ? "bg-arena-green/15 text-arena-green"
+                            : "bg-arena-orange/15 text-arena-orange",
+                          isAdmin && "hover:scale-105 active:scale-95",
+                          !isAdmin && "cursor-default",
+                        )}
+                      >
+                        {p.paid ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Pago
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-3.5 w-3.5" />
+                            Pendente
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 

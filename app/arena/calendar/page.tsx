@@ -226,6 +226,25 @@ export default function CalendarPage() {
   const removeClass = (id: string) =>
     setClasses((prev) => prev.filter((c) => c.id !== id));
 
+  // Alterna a confirmação de presença de um aluno em uma aula.
+  const toggleConfirm = (classId: string, studentName: string) => {
+    if (!isAdmin) return;
+    setClasses((prev) =>
+      prev.map((c) =>
+        c.id === classId
+          ? {
+              ...c,
+              students: c.students.map((st) =>
+                st.name === studentName
+                  ? { ...st, confirmed: !st.confirmed }
+                  : st,
+              ),
+            }
+          : c,
+      ),
+    );
+  };
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -506,14 +525,52 @@ export default function CalendarPage() {
                           {cls.students.map((st) => (
                             <li
                               key={st.name}
-                              className="flex items-center gap-1.5 text-xs text-arena-ink"
+                              className="flex items-center gap-2 text-xs text-arena-ink"
                             >
-                              {st.confirmed ? (
-                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-arena-green" />
-                              ) : (
-                                <Clock className="h-3.5 w-3.5 shrink-0 text-arena-orange" />
-                              )}
-                              {st.name}
+                              {/* Bolinha de confirmação — admin clica para alternar */}
+                              <button
+                                onClick={() => toggleConfirm(cls.id, st.name)}
+                                disabled={!isAdmin}
+                                title={
+                                  isAdmin
+                                    ? st.confirmed
+                                      ? "Confirmado — clique para desmarcar"
+                                      : "Pendente — clique para confirmar"
+                                    : st.confirmed
+                                      ? "Confirmado"
+                                      : "Pendente"
+                                }
+                                aria-label={`${st.name}: ${st.confirmed ? "confirmado" : "pendente"}`}
+                                className={cn(
+                                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150",
+                                  st.confirmed
+                                    ? "border-arena-green bg-arena-green"
+                                    : "border-arena-muted bg-transparent",
+                                  isAdmin &&
+                                    "cursor-pointer hover:scale-110 active:scale-90",
+                                )}
+                              >
+                                {st.confirmed && (
+                                  <svg
+                                    viewBox="0 0 10 10"
+                                    className="h-2.5 w-2.5 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <path d="M1.5 5.5 4 8l4.5-6" />
+                                  </svg>
+                                )}
+                              </button>
+                              <span
+                                className={cn(
+                                  !st.confirmed && "text-arena-muted",
+                                )}
+                              >
+                                {st.name}
+                              </span>
                             </li>
                           ))}
                         </ul>
