@@ -13,13 +13,17 @@ import {
   Search,
   Trophy,
   Zap,
+  BarChart3,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Calendário de Aulas", href: "/arena/calendar", icon: CalendarDays },
+  { name: "Feed", href: "/arena/feed", icon: Newspaper },
   { name: "Gestão de Alunos", href: "/arena/students", icon: Users },
   { name: "Financeiro", href: "/arena/finance", icon: DollarSign },
+  { name: "Relatório Mensal", href: "/arena/report", icon: BarChart3 },
   { name: "CEFFLASH", href: "/arena/cefflash", icon: Zap },
   { name: "Configurações", href: "/arena/settings", icon: Settings },
 ];
