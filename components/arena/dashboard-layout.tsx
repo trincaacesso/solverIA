@@ -29,11 +29,25 @@ const navigation = [
 ];
 
 function Brand() {
+  // Logo oficial em public/logo-ctvh.png; se ausente, cai no ícone padrão.
+  const [logoFailed, setLogoFailed] = useState(false);
   return (
     <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-arena-blue text-white">
-        <Trophy className="h-5 w-5" />
-      </span>
+      {logoFailed ? (
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-arena-blue text-white">
+          <Trophy className="h-5 w-5" />
+        </span>
+      ) : (
+        <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-black">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-ctvh.png"
+            alt="Logo CT VH Futevôlei"
+            className="h-9 w-9 object-cover"
+            onError={() => setLogoFailed(true)}
+          />
+        </span>
+      )}
       <span className="text-base font-bold leading-tight text-arena-ink">
         CT VH
         <span className="block text-xs font-medium text-arena-muted">

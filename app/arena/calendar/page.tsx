@@ -95,6 +95,8 @@ export default function CalendarPage() {
   const [classes, setClasses] = useState<ClassData[]>(() => buildClasses());
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState<ClassData | null>(null);
+  // Dia selecionado (yyyy-MM-dd) para filtrar as aulas; null = semana toda.
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [nextId, setNextId] = useState(100);
 
   const weekStart = startOfWeek(anchor);
@@ -102,7 +104,20 @@ export default function CalendarPage() {
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart],
   );
+  const visibleDays = selectedDay
+    ? days.filter((d) => toISODate(d) === selectedDay)
+    : days;
   const today = new Date();
+
+  const changeWeek = (offset: number) => {
+    setAnchor(addDays(anchor, offset));
+    setSelectedDay(null);
+  };
+
+  const toggleDay = (day: Date) => {
+    const iso = toISODate(day);
+    setSelectedDay((prev) => (prev === iso ? null : iso));
+  };
 
   const emptyForm: NewClassForm = {
     name: "",
@@ -169,9 +184,9 @@ export default function CalendarPage() {
       </div>
 
       {/* Week navigation */}
-      <div className="mb-6 flex items-center justify-between rounded-lg border border-arena-border bg-arena-card px-4 py-3 shadow-sm">
+      <div className="mb-4 flex items-center justify-between rounded-lg border border-arena-border bg-arena-card px-4 py-3 shadow-sm">
         <button
-          onClick={() => setAnchor(addDays(anchor, -7))}
+          onClick={() => changeWeek(-7)}
           className="rounded-md p-2 text-arena-muted transition-transform duration-200 hover:scale-110 hover:text-arena-blue active:scale-95"
           aria-label="Semana anterior"
         >
@@ -181,7 +196,7 @@ export default function CalendarPage() {
           {longDate(weekStart)} — {longDate(addDays(weekStart, 6))}
         </p>
         <button
-          onClick={() => setAnchor(addDays(anchor, 7))}
+          onClick={() => changeWeek(7)}
           className="rounded-md p-2 text-arena-muted transition-transform duration-200 hover:scale-110 hover:text-arena-blue active:scale-95"
           aria-label="Próxima semana"
         >
@@ -189,9 +204,81 @@ export default function CalendarPage() {
         </button>
       </div>
 
-      {/* Week grid */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
+      {/* Day filter strip — clique em um dia para ver só as aulas dele */}
+      <div className="mb-6 grid grid-cols-7 gap-1.5 sm:gap-2">
         {days.map((day) => {
+          const iso = toISODate(day);
+          const isSelected = selectedDay === iso;
+          const isToday = isSameDay(day, today);
+          const count = classes.filter((c) =>
+            isSameDay(parseISODate(c.date), day),
+          ).length;
+          return (
+            <button
+              key={iso}
+              onClick={() => toggleDay(day)}
+              className={cn(
+                "rounded-md border py-2 text-center transition-all duration-150 hover:scale-105 active:scale-95",
+                isSelected
+                  ? "border-arena-blue bg-arena-blue text-white shadow-sm"
+                  : isToday
+                    ? "border-arena-blue bg-arena-blue/10 text-arena-blue"
+                    : "border-arena-border bg-arena-card text-arena-muted hover:border-arena-blue hover:text-arena-blue",
+              )}
+              aria-pressed={isSelected}
+            >
+              <span className="text-[10px] font-semibold sm:text-xs">
+                {weekdayShort(day)}
+              </span>
+              <span
+                className={cn(
+                  "block text-base font-bold sm:text-lg",
+                  isSelected
+                    ? "text-white"
+                    : isToday
+                      ? "text-arena-blue"
+                      : "text-arena-ink",
+                )}
+              >
+                {dayOfMonth(day)}
+              </span>
+              <span
+                className={cn(
+                  "block text-[10px] sm:text-xs",
+                  isSelected ? "text-white/80" : "text-arena-muted",
+                )}
+              >
+                {count} {count === 1 ? "aula" : "aulas"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {selectedDay && (
+        <div className="mb-4 flex items-center justify-between rounded-md border border-arena-blue/40 bg-arena-blue/5 px-4 py-2.5">
+          <p className="text-sm font-medium text-arena-ink">
+            Mostrando aulas de {longDate(parseISODate(selectedDay))}
+          </p>
+          <button
+            onClick={() => setSelectedDay(null)}
+            className="text-sm font-semibold text-arena-blue hover:underline"
+          >
+            Ver semana completa
+          </button>
+        </div>
+      )}
+
+      {/* Week grid */}
+      <div
+        className={cn(
+          "grid gap-3",
+          selectedDay
+            ? "grid-cols-1"
+            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-7",
+        )}
+      >
+        {visibleDays.map((day) => {
           const dayClasses = classes
             .filter((c) => isSameDay(parseISODate(c.date), day))
             .sort((a, b) => a.time.localeCompare(b.time));
