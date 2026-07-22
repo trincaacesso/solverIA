@@ -22,7 +22,7 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors focus:border-arena-blue focus:bg-white";
+  "w-full rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors focus:border-arena-blue";
 
 function Toggle({
   checked,

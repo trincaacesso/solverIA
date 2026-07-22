@@ -29,8 +29,10 @@ function Brand() {
         <Trophy className="h-5 w-5" />
       </span>
       <span className="text-base font-bold leading-tight text-arena-ink">
-        Arena Futevôlei
-        <span className="block text-xs font-medium text-arena-muted">OS</span>
+        CT VH
+        <span className="block text-xs font-medium text-arena-muted">
+          Futevôlei
+        </span>
       </span>
     </div>
   );
@@ -111,7 +113,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <Menu className="h-6 w-6" />
             </button>
             <span className="text-base font-semibold text-arena-ink">
-              Arena Futevôlei OS
+              CT VH Futevôlei
             </span>
           </div>
 
@@ -121,7 +123,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <input
                 type="search"
                 placeholder="Buscar alunos, aulas..."
-                className="w-full rounded-md border border-arena-border bg-arena-bg py-2 pl-9 pr-3 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue focus:bg-white"
+                className="w-full rounded-md border border-arena-border bg-arena-bg py-2 pl-9 pr-3 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue focus:bg-arena-bg"
               />
             </div>
           </div>
