@@ -24,6 +24,20 @@ const config: Config = {
           cyan: "#22d3ee",
           blue: "#3b82f6",
         },
+        // Arena Futevôlei OS — light dashboard palette
+        arena: {
+          blue: "#0066CC",
+          "blue-dark": "#0055aa",
+          orange: "#FF6B35",
+          green: "#16a34a",
+          yellow: "#eab308",
+          red: "#ef4444",
+          bg: "#F3F4F6",
+          card: "#FFFFFF",
+          ink: "#111827",
+          muted: "#6B7280",
+          border: "#E5E7EB",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
