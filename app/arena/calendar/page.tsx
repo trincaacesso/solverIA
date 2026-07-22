@@ -9,6 +9,7 @@ import {
   User,
   Users,
   CheckCircle2,
+  MessageCircle,
   X,
 } from "lucide-react";
 import {
@@ -71,6 +72,47 @@ function buildClasses(): ClassData[] {
     { id: "qua-19", name: "Elite B (duplas)", professor: "A definir", level: "Avançado", date: "2026-07-22", time: "19:00", maxStudents: 4, students: [s("Ericky e Biel"), s("Enzo Felipe e David Silva"), s("Bernardo e Kauã Martins"), s("Victor e Vini", true)] },
     { id: "qua-20", name: "Feminino", professor: "A definir", level: "Intermediário", date: "2026-07-22", time: "20:00", maxStudents: 8, students: [s("Luanda"), s("Cecília"), s("Rafa"), s("Karla")] },
   ];
+}
+
+const WEEKDAYS_FULL = [
+  "DOMINGO",
+  "SEGUNDA-FEIRA",
+  "TERÇA-FEIRA",
+  "QUARTA-FEIRA",
+  "QUINTA-FEIRA",
+  "SEXTA-FEIRA",
+  "SÁBADO",
+];
+
+/** "15:00" → "15h" · "15:30" → "15h30" */
+function timeLabel(time: string): string {
+  const [h, m] = time.split(":");
+  return m === "00" ? `${parseInt(h, 10)}h` : `${parseInt(h, 10)}h${m}`;
+}
+
+/** Monta a lista do treino do dia no formato usado no WhatsApp do CT. */
+function buildWhatsAppList(day: Date, classes: ClassData[]): string {
+  const dayClasses = classes
+    .filter((c) => isSameDay(parseISODate(c.date), day))
+    .sort((a, b) => a.time.localeCompare(b.time));
+  const dd = String(day.getDate()).padStart(2, "0");
+  const mm = String(day.getMonth() + 1).padStart(2, "0");
+  const lines = [`📋 *LISTA DO TREINO — ${WEEKDAYS_FULL[day.getDay()]} (${dd}/${mm})*`];
+  if (dayClasses.length === 0) {
+    lines.push("", "Sem aulas neste dia.");
+    return lines.join("\n");
+  }
+  for (const cls of dayClasses) {
+    lines.push("", `*${timeLabel(cls.time)} — ${cls.name}*`, "");
+    if (cls.students.length === 0) {
+      lines.push("• Livre");
+    } else {
+      for (const st of cls.students) {
+        lines.push(`• ${st.name}${st.confirmed ? " ✅" : " ⏳"}`);
+      }
+    }
+  }
+  return lines.join("\n");
 }
 
 const levelStyles: Record<Level, string> = {
@@ -179,13 +221,31 @@ export default function CalendarPage() {
           </p>
         </div>
         {isAdmin && (
-          <button
-            onClick={openForm}
-            className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
-          >
-            <PlusCircle className="h-5 w-5" />
-            Nova Aula
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                const day = selectedDay ? parseISODate(selectedDay) : today;
+                const text = buildWhatsAppList(day, classes);
+                window.open(
+                  `https://wa.me/?text=${encodeURIComponent(text)}`,
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+              }}
+              title="Monta a lista do dia selecionado (ou de hoje) e abre o WhatsApp com a mensagem pronta"
+              className="inline-flex items-center gap-2 rounded-md bg-arena-green px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:opacity-90 active:scale-95"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Enviar lista no WhatsApp
+            </button>
+            <button
+              onClick={openForm}
+              className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
+            >
+              <PlusCircle className="h-5 w-5" />
+              Nova Aula
+            </button>
+          </div>
         )}
       </div>
 

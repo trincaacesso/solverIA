@@ -16,6 +16,7 @@ interface Student {
   phone: string;
   plan: Plan;
   level: string; // turma
+  aulas: number; // quantidade de aulas por semana
   status: Status;
 }
 
@@ -40,6 +41,7 @@ const initialStudents: Student[] = ROSTER.map((entry, i) => ({
   phone: "",
   plan: "Mensal",
   level: entry.turma,
+  aulas: 2,
   status: "Ativo",
 }));
 
@@ -67,6 +69,7 @@ interface StudentForm {
   email: string;
   plan: Plan;
   level: string;
+  aulas: string;
   status: Status;
 }
 
@@ -76,6 +79,7 @@ const emptyForm: StudentForm = {
   email: "",
   plan: "Mensal",
   level: "—",
+  aulas: "2",
   status: "Ativo",
 };
 
@@ -114,6 +118,7 @@ export default function StudentsPage() {
       email: s.email,
       plan: s.plan,
       level: s.level,
+      aulas: String(s.aulas),
       status: s.status,
     });
     setError("");
@@ -132,6 +137,7 @@ export default function StudentsPage() {
       email: form.email.trim(),
       plan: form.plan,
       level: form.level,
+      aulas: Math.max(0, parseInt(form.aulas, 10) || 0),
       status: form.status,
     };
     if (editingId === "new") {
@@ -201,6 +207,7 @@ export default function StudentsPage() {
                 <th className="px-4 py-3 font-semibold">Contato</th>
                 <th className="px-4 py-3 font-semibold">Plano</th>
                 <th className="px-4 py-3 font-semibold">Turma</th>
+                <th className="px-4 py-3 font-semibold">Aulas</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 {isAdmin && <th className="px-4 py-3 font-semibold">Ações</th>}
               </tr>
@@ -239,6 +246,11 @@ export default function StudentsPage() {
                   <td className="px-4 py-3 text-arena-ink">{s.plan}</td>
                   <td className="px-4 py-3 text-arena-ink">{s.level}</td>
                   <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-arena-blue/10 px-2.5 py-0.5 text-xs font-semibold text-arena-blue">
+                      {s.aulas}x/semana
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <span
                       className={cn(
                         "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
@@ -264,7 +276,7 @@ export default function StudentsPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={isAdmin ? 6 : 5}
+                    colSpan={isAdmin ? 7 : 6}
                     className="px-4 py-8 text-center text-arena-muted"
                   >
                     Nenhum aluno encontrado.
@@ -377,23 +389,39 @@ export default function StudentsPage() {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-arena-ink">
-                  Status
-                </label>
-                <select
-                  className={inputClass}
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as Status })
-                  }
-                >
-                  {STATUSES.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-arena-ink">
+                    Aulas por semana
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    className={inputClass}
+                    value={form.aulas}
+                    onChange={(e) =>
+                      setForm({ ...form, aulas: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-arena-ink">
+                    Status
+                  </label>
+                  <select
+                    className={inputClass}
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as Status })
+                    }
+                  >
+                    {STATUSES.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {error && (
