@@ -51,6 +51,19 @@ export default function FeedPage() {
           </div>
         ))}
       </div>
+
+      {/* Link para o perfil no Instagram */}
+      <div className="mt-8 flex justify-center pb-4">
+        <a
+          href="https://www.instagram.com/cefflash/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-md bg-arena-blue px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:scale-105 hover:bg-arena-blue-dark active:scale-95"
+        >
+          <Instagram className="h-5 w-5" />
+          Ver mais no Instagram
+        </a>
+      </div>
     </div>
   );
 }

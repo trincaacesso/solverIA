@@ -29,24 +29,6 @@ interface Championship {
   pairsCount: number;
 }
 
-// Competição de exemplo com as duplas da Elite B.
-function seedChampionships(): Championship[] {
-  const pairs = [
-    "Ericky e Biel",
-    "Enzo Felipe e David Silva",
-    "Bernardo e Kauã Martins",
-    "Victor e Vini",
-  ];
-  return [
-    {
-      id: "seed-1",
-      name: "Torneio Interno CT VH — Elite B",
-      rounds: buildBracket(pairs),
-      pairsCount: pairs.length,
-    },
-  ];
-}
-
 const inputClass =
   "w-full rounded-md border border-arena-border bg-arena-bg px-3 py-2 text-sm text-arena-ink outline-none transition-colors placeholder:text-arena-muted focus:border-arena-blue";
 
@@ -54,9 +36,8 @@ export default function CefflashPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  const [championships, setChampionships] = useState<Championship[]>(
-    seedChampionships,
-  );
+  // Começa vazio — as competições são criadas pelo administrador.
+  const [championships, setChampionships] = useState<Championship[]>([]);
   // null = lista de competições; "new" = formulário; senão id da competição aberta.
   const [view, setView] = useState<string | null>(null);
   const [nextId, setNextId] = useState(100);
