@@ -50,9 +50,14 @@ const LEVELS: Level[] = ["Iniciante", "Intermediário", "Avançado"];
 // s("Nome") = pendente ⏳ · s("Nome", true) = confirmado ✅
 const s = (name: string, confirmed = false): Student => ({ name, confirmed });
 
-// Listas de treino da semana de 20/07 a 22/07.
+// Listas de treino.
 function buildClasses(): ClassData[] {
   return [
+    // ── Quinta-feira (06/08) ──
+    { id: "qui-17", name: "Iniciante", professor: "A definir", level: "Iniciante", date: "2026-08-06", time: "17:00", maxStudents: 8, students: [s("Alice"), s("Leandro", true), s("Karla"), s("Lara"), s("Camila", true)] },
+    { id: "qui-18", name: "Aprendiz", professor: "A definir", level: "Intermediário", date: "2026-08-06", time: "18:00", maxStudents: 8, students: [s("Clarckson (1-8)", true), s("Nicolau", true), s("Luana Vaz (0-8)", true), s("Amanda"), s("Yasmin"), s("Ana Luísa"), s("Ana Clara")] },
+    { id: "qui-19", name: "Pré-Elite", professor: "A definir", level: "Avançado", date: "2026-08-06", time: "19:00", maxStudents: 8, students: [s("Gui", true), s("Dias"), s("Enzo", true), s("Acácio", true), s("João Almir")] },
+    { id: "qui-20", name: "Aprendiz", professor: "A definir", level: "Intermediário", date: "2026-08-06", time: "20:00", maxStudents: 8, students: [s("Hugo (2-8)", true), s("Cindya (2-8)", true), s("Lucas (1-8)", true)] },
     // ── Segunda-feira (20/07) ──
     { id: "seg-15", name: "Iniciante", professor: "A definir", level: "Iniciante", date: "2026-07-20", time: "15:00", maxStudents: 8, students: [s("Caixa", true), s("Brendon"), s("Pedro Dias", true), s("Enzo Neves", true), s("Gustavo Santos", true)] },
     { id: "seg-16", name: "Aprendiz", professor: "A definir", level: "Intermediário", date: "2026-07-20", time: "16:00", maxStudents: 8, students: [s("Pedro", true), s("Livia", true), s("Lara", true)] },
