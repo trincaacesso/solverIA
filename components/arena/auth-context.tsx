@@ -31,7 +31,7 @@ function normalize(value: string): string {
 
 /**
  * Valida credenciais.
- * Admin: vitorhugo / professorvitor.
+ * Admin: vitorhugo123 / professorvitor10.
  * Alunos: primeiro nome / primeironome123 (ex.: pedro / pedro123).
  */
 export function authenticate(
@@ -39,7 +39,7 @@ export function authenticate(
   password: string,
 ): AuthUser | null {
   const u = normalize(username);
-  if (u === "vitorhugo" && password === "professorvitor") {
+  if (u === "vitorhugo123" && password === "professorvitor10") {
     return { username: u, displayName: "Vitor Hugo", role: "admin" };
   }
   for (const entry of ROSTER) {
@@ -53,9 +53,11 @@ export function authenticate(
 
 interface AuthContextValue {
   user: AuthUser | null;
-  /** false enquanto o localStorage ainda não foi lido. */
+  /** false enquanto o storage ainda não foi lido. */
   ready: boolean;
-  login: (username: string, password: string) => boolean;
+  /** remember=true salva a sessão para sempre (localStorage);
+   *  false mantém só até fechar a aba (sessionStorage). */
+  login: (username: string, password: string, remember?: boolean) => boolean;
   logout: () => void;
 }
 
@@ -68,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      // localStorage = "salvar sempre"; sessionStorage = sessão da aba atual.
+      const raw =
+        localStorage.getItem(STORAGE_KEY) ??
+        sessionStorage.getItem(STORAGE_KEY);
       if (raw) setUser(JSON.parse(raw) as AuthUser);
     } catch {
       // sessão corrompida — ignora e exige novo login
@@ -76,17 +81,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  const login = (username: string, password: string) => {
+  const login = (username: string, password: string, remember = false) => {
     const found = authenticate(username, password);
     if (!found) return false;
     setUser(found);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(found));
+    const payload = JSON.stringify(found);
+    // Limpa ambos e grava só no destino escolhido.
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+    if (remember) {
+      localStorage.setItem(STORAGE_KEY, payload);
+    } else {
+      sessionStorage.setItem(STORAGE_KEY, payload);
+    }
     return true;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
     router.replace("/arena/login");
   };
 

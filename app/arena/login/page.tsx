@@ -14,11 +14,12 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!login(username, password)) {
+    if (!login(username, password, remember)) {
       setError("Login ou senha incorretos.");
       return;
     }
@@ -102,6 +103,16 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-arena-ink">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-4 w-4 rounded border-arena-border accent-arena-blue"
+              />
+              Salvar login sempre neste dispositivo
+            </label>
 
             {error && (
               <p className="rounded-md bg-arena-red/10 px-3 py-2 text-sm font-medium text-arena-red">
