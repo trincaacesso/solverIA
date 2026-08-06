@@ -33,11 +33,11 @@ const config: Config = {
           green: "#16a34a",
           yellow: "#ca8a04",
           red: "#dc2626",
-          bg: "#eef0fb",
+          bg: "#f3eefc",
           card: "#ffffff",
-          ink: "#232349",
-          muted: "#5f6690",
-          border: "rgba(120,110,180,0.22)",
+          ink: "#2a2150",
+          muted: "#6b5f90",
+          border: "rgba(124,58,237,0.18)",
         },
       },
       fontFamily: {
@@ -45,9 +45,9 @@ const config: Config = {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        // Fundo do painel CT VH: teal → índigo → roxo suave (versão clara)
+        // Fundo do painel CT VH: mistura de roxo com branco, em tom claro
         "arena-gradient":
-          "linear-gradient(135deg, #8fe3d6 0%, #a7bdf0 48%, #cbb9f5 100%)",
+          "linear-gradient(135deg, #f5f1fc 0%, #ddccf4 50%, #bfa3ec 100%)",
         "grad-brand": "linear-gradient(120deg, #7c5cff 0%, #22d3ee 100%)",
         "grad-brand-soft":
           "linear-gradient(120deg, rgba(124,92,255,.15), rgba(34,211,238,.12))",
