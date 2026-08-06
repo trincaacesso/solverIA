@@ -189,9 +189,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen bg-arena-bg text-arena-ink">
+    <div className="flex min-h-screen text-arena-ink">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-arena-border bg-arena-card shadow-sm md:flex">
+      <aside className="hidden w-64 flex-col border-r border-arena-border bg-arena-card/80 shadow-sm backdrop-blur-md md:flex">
         <div className="flex h-16 items-center border-b border-arena-border px-4">
           <Brand />
         </div>
@@ -205,7 +205,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             className="absolute inset-0 bg-black/40"
             onClick={() => setIsSidebarOpen(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-arena-card shadow-xl">
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-arena-card shadow-xl backdrop-blur-md">
             <div className="flex h-16 items-center justify-between border-b border-arena-border px-4">
               <Brand />
               <button
@@ -223,7 +223,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-arena-border bg-arena-card px-4 shadow-sm">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-arena-border bg-arena-card/80 px-4 shadow-sm backdrop-blur-md">
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setIsSidebarOpen(true)}

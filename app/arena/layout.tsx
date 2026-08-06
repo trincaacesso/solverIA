@@ -14,9 +14,11 @@ export default function ArenaLayout({
 }) {
   return (
     <AuthProvider>
-      <RequireAuth>
-        <ArenaChrome>{children}</ArenaChrome>
-      </RequireAuth>
+      <div className="min-h-screen bg-arena-gradient bg-fixed font-sans text-arena-ink">
+        <RequireAuth>
+          <ArenaChrome>{children}</ArenaChrome>
+        </RequireAuth>
+      </div>
     </AuthProvider>
   );
 }

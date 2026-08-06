@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Poppins, Sora } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+// Poppins — tipografia geométrica no estilo do dashboard de referência.
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -63,7 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable} dark`}>
+    <html lang="en" className={`${poppins.variable} ${sora.variable} dark`}>
       <body>{children}</body>
     </html>
   );

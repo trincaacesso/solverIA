@@ -142,7 +142,7 @@ export function RequireAuth({
   if (isLoginPage) return <>{children}</>;
   if (!ready || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-arena-bg">
+      <div className="flex min-h-screen items-center justify-center">
         <p className="text-sm text-arena-muted">Carregando...</p>
       </div>
     );

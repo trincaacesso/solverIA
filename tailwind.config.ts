@@ -24,19 +24,20 @@ const config: Config = {
           cyan: "#22d3ee",
           blue: "#3b82f6",
         },
-        // CT VH — tema claro com roxo da logo
+        // CT VH — tema dashboard: degradê teal→roxo com painéis escuros
         arena: {
-          blue: "#7c3aed",
-          "blue-dark": "#6d28d9",
-          orange: "#ea580c",
-          green: "#16a34a",
-          yellow: "#ca8a04",
-          red: "#dc2626",
-          bg: "#efe7fc",
-          card: "#ffffff",
-          ink: "#241b3d",
-          muted: "#6f6890",
-          border: "#ddd0f2",
+          blue: "#7c6fe0",
+          "blue-dark": "#655bd4",
+          teal: "#2dd4bf",
+          orange: "#fb923c",
+          green: "#4ade80",
+          yellow: "#fbbf24",
+          red: "#f87171",
+          bg: "#242a5c",
+          card: "#2d3470",
+          ink: "#f2f3ff",
+          muted: "#b9bef0",
+          border: "rgba(255,255,255,0.12)",
         },
       },
       fontFamily: {
@@ -44,6 +45,9 @@ const config: Config = {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       backgroundImage: {
+        // Fundo do painel CT VH: teal → índigo → roxo (referência do dashboard)
+        "arena-gradient":
+          "linear-gradient(135deg, #17958c 0%, #3a56ac 48%, #6d5fd6 100%)",
         "grad-brand": "linear-gradient(120deg, #7c5cff 0%, #22d3ee 100%)",
         "grad-brand-soft":
           "linear-gradient(120deg, rgba(124,92,255,.15), rgba(34,211,238,.12))",
