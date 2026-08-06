@@ -245,8 +245,18 @@ export default function CalendarPage() {
     );
   };
 
+  const firstName = user?.displayName.split(" ")[0] ?? "";
+
   return (
     <div>
+      {/* Saudação do usuário logado */}
+      <div className="mb-5">
+        <p className="text-sm font-medium text-arena-muted">Olá,</p>
+        <p className="text-2xl font-bold text-arena-blue sm:text-3xl">
+          {firstName}
+        </p>
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-arena-ink sm:text-3xl">
