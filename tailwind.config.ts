@@ -24,20 +24,20 @@ const config: Config = {
           cyan: "#22d3ee",
           blue: "#3b82f6",
         },
-        // CT VH — tema dashboard: degradê teal→roxo com painéis escuros
+        // CT VH — tema dashboard claro: degradê teal→roxo suave com painéis brancos
         arena: {
-          blue: "#7c6fe0",
-          "blue-dark": "#655bd4",
-          teal: "#2dd4bf",
-          orange: "#fb923c",
-          green: "#4ade80",
-          yellow: "#fbbf24",
-          red: "#f87171",
-          bg: "#242a5c",
-          card: "#2d3470",
-          ink: "#f2f3ff",
-          muted: "#b9bef0",
-          border: "rgba(255,255,255,0.12)",
+          blue: "#7c3aed",
+          "blue-dark": "#6d28d9",
+          teal: "#0d9488",
+          orange: "#ea580c",
+          green: "#16a34a",
+          yellow: "#ca8a04",
+          red: "#dc2626",
+          bg: "#eef0fb",
+          card: "#ffffff",
+          ink: "#232349",
+          muted: "#5f6690",
+          border: "rgba(120,110,180,0.22)",
         },
       },
       fontFamily: {
@@ -45,9 +45,9 @@ const config: Config = {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        // Fundo do painel CT VH: teal → índigo → roxo (referência do dashboard)
+        // Fundo do painel CT VH: teal → índigo → roxo suave (versão clara)
         "arena-gradient":
-          "linear-gradient(135deg, #17958c 0%, #3a56ac 48%, #6d5fd6 100%)",
+          "linear-gradient(135deg, #8fe3d6 0%, #a7bdf0 48%, #cbb9f5 100%)",
         "grad-brand": "linear-gradient(120deg, #7c5cff 0%, #22d3ee 100%)",
         "grad-brand-soft":
           "linear-gradient(120deg, rgba(124,92,255,.15), rgba(34,211,238,.12))",
