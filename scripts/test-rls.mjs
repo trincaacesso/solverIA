@@ -95,6 +95,27 @@ console.log("\nALUNO (ana.clara)");
       erroUpd ? `banco recusou: ${erroUpd.message}` : "o cargo mudou!",
     );
 
+    // nem trocar de turma por conta própria
+    await db.from("profiles").update({ turma: "Elite B" }).eq("id", user.id);
+    const { data: turmaDepois } = await db
+      .from("profiles").select("turma").eq("id", user.id);
+    checa(
+      "NÃO consegue mudar a própria turma",
+      turmaDepois?.[0]?.turma !== "Elite B",
+      `turma virou "${turmaDepois?.[0]?.turma}"`,
+    );
+
+    // mas o que é dela, ela edita — isso precisa continuar funcionando
+    const tel = `319${Math.floor(10000000 + Math.random() * 89999999)}`;
+    await db.from("profiles").update({ phone: tel }).eq("id", user.id);
+    const { data: telDepois } = await db
+      .from("profiles").select("phone").eq("id", user.id);
+    checa(
+      "AINDA consegue editar o próprio telefone",
+      telDepois?.[0]?.phone === tel,
+      `esperava ${tel}, veio "${telDepois?.[0]?.phone}"`,
+    );
+
     const { data: turmas } = await db.from("turmas").select("id");
     checa("enxerga as turmas (isso é permitido)", (turmas?.length ?? 0) === 8);
 
