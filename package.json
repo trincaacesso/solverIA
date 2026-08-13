@@ -4,7 +4,7 @@
   "private": true,
   "description": "SolverIA — We save time and increase sales using Artificial Intelligence.",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "next dev",
