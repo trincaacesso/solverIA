@@ -16,10 +16,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  // login() agora conversa com o Supabase pela rede, então é assíncrono
+  // e pode demorar — daí o estado de "Entrando...".
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!login(username, password, remember)) {
+    setLoading(true);
+    setError("");
+
+    const ok = await login(username, password, remember);
+    setLoading(false);
+
+    if (!ok) {
       setError("Login ou senha incorretos.");
       return;
     }
@@ -122,16 +131,18 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-arena-blue-dark active:scale-[0.98]"
+              disabled={loading}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-arena-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-arena-blue-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <LogIn className="h-4 w-4" />
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </button>
           </div>
         </form>
 
         <p className="mt-4 text-center text-xs text-arena-muted">
-          Alunos: use seu primeiro nome como login.
+          Alunos: use seu primeiro nome como login. Quem tem xará no CT usa
+          nome e sobrenome, como <strong>ana.clara</strong>.
         </p>
       </div>
     </div>

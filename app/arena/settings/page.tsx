@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Save, Building2, Clock, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RequireAdmin } from "@/components/arena/auth-context";
 
 function Field({
   label,
@@ -52,7 +53,7 @@ function Toggle({
   );
 }
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const [arenaName, setArenaName] = useState("CT VH");
   const [openTime, setOpenTime] = useState("06:00");
   const [closeTime, setCloseTime] = useState("22:00");
@@ -179,5 +180,16 @@ export default function SettingsPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+// Bloqueia o acesso por URL direta: sem isso um aluno abre /arena/settings
+// e vê a tela. Isto é só conveniência de interface — quem realmente
+// protege os dados são as policies de RLS no banco.
+export default function SettingsPage() {
+  return (
+    <RequireAdmin>
+      <SettingsPageContent />
+    </RequireAdmin>
   );
 }

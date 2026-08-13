@@ -2,66 +2,66 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ROSTER } from "@/lib/arena-students";
+import { supabase, emailFromUsername, setRemember } from "@/lib/supabase";
 
 export type Role = "admin" | "aluno";
 
 export interface AuthUser {
+  /** uuid do Supabase — usado nas consultas e nas regras de RLS. */
+  id: string;
   username: string;
   displayName: string;
   role: Role;
-}
-
-const STORAGE_KEY = "ctvh-auth";
-
-/** minúsculas + sem acentos, para comparar logins. */
-function normalize(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
-}
-
-/**
- * Valida credenciais.
- * Admin: vitorhugo123 / professorvitor10.
- * Alunos: primeiro nome / primeironome123 (ex.: pedro / pedro123).
- */
-export function authenticate(
-  username: string,
-  password: string,
-): AuthUser | null {
-  const u = normalize(username);
-  if (u === "vitorhugo123" && password === "professorvitor10") {
-    return { username: u, displayName: "Vitor Hugo", role: "admin" };
-  }
-  for (const entry of ROSTER) {
-    const first = normalize(entry.name.split(" ")[0]);
-    if (first === u && password === `${first}123`) {
-      return { username: u, displayName: entry.name, role: "aluno" };
-    }
-  }
-  return null;
+  turma: string;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
-  /** false enquanto o storage ainda não foi lido. */
+  /** false enquanto a sessão ainda não foi lida. */
   ready: boolean;
-  /** remember=true salva a sessão para sempre (localStorage);
-   *  false mantém só até fechar a aba (sessionStorage). */
-  login: (username: string, password: string, remember?: boolean) => boolean;
-  logout: () => void;
+  /** remember=true mantém a sessão depois de fechar o app/navegador. */
+  login: (
+    username: string,
+    password: string,
+    remember?: boolean,
+  ) => Promise<boolean>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/**
+ * Busca o cadastro do CT (nome, turma, cargo) para o usuário logado.
+ *
+ * O cargo vem SEMPRE da tabela profiles, nunca do user_metadata: o
+ * próprio usuário consegue editar o próprio metadata pela API, então
+ * usá-lo para autorização deixaria qualquer aluno virar admin. A tabela
+ * profiles só o admin escreve — é o que as policies de RLS conferem.
+ */
+async function loadProfile(userId: string): Promise<AuthUser | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, full_name, role, turma")
+    .eq("id", userId)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.full_name,
+    role: data.role as Role,
+    turma: data.turma ?? "—",
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -69,40 +69,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    try {
-      // localStorage = "salvar sempre"; sessionStorage = sessão da aba atual.
-      const raw =
-        localStorage.getItem(STORAGE_KEY) ??
-        sessionStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw) as AuthUser);
-    } catch {
-      // sessão corrompida — ignora e exige novo login
-    }
-    setReady(true);
+    let alive = true;
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!alive) return;
+      if (data.session) {
+        const profile = await loadProfile(data.session.user.id);
+        if (alive) setUser(profile);
+      }
+      if (alive) setReady(true);
+    });
+
+    // Mantém o app em dia quando o token é renovado ou a sessão expira.
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (!alive) return;
+        setUser(session ? await loadProfile(session.user.id) : null);
+      },
+    );
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = (username: string, password: string, remember = false) => {
-    const found = authenticate(username, password);
-    if (!found) return false;
-    setUser(found);
-    const payload = JSON.stringify(found);
-    // Limpa ambos e grava só no destino escolhido.
-    localStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(STORAGE_KEY);
-    if (remember) {
-      localStorage.setItem(STORAGE_KEY, payload);
-    } else {
-      sessionStorage.setItem(STORAGE_KEY, payload);
-    }
-    return true;
-  };
+  const login = useCallback(
+    async (username: string, password: string, remember = false) => {
+      setRemember(remember); // precisa vir antes: define onde a sessão é gravada
 
-  const logout = () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailFromUsername(username),
+        password,
+      });
+      if (error || !data.user) return false;
+
+      setUser(await loadProfile(data.user.id));
+      return true;
+    },
+    [],
+  );
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(STORAGE_KEY);
     router.replace("/arena/login");
-  };
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ user, ready, login, logout }}>
@@ -147,5 +159,26 @@ export function RequireAuth({
       </div>
     );
   }
+  return <>{children}</>;
+}
+
+/**
+ * Envolve as telas que só o professor pode ver.
+ *
+ * Isto é conveniência de interface, NÃO segurança: quem protege os dados
+ * são as policies de RLS no banco. Mesmo que alguém burlasse este
+ * componente, as consultas voltariam vazias.
+ */
+export function RequireAdmin({ children }: { children: ReactNode }) {
+  const { user, ready } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (ready && user && user.role !== "admin") {
+      router.replace("/arena/calendar");
+    }
+  }, [ready, user, router]);
+
+  if (!ready || user?.role !== "admin") return null;
   return <>{children}</>;
 }

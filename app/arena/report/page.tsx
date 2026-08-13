@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROSTER } from "@/lib/arena-students";
-import { useAuth } from "@/components/arena/auth-context";
+import { useAuth, RequireAdmin } from "@/components/arena/auth-context";
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -110,7 +110,7 @@ const destaques = [
   "Torneio interno agendado para Agosto já tem 24 inscritos.",
 ];
 
-export default function ReportPage() {
+function ReportPageContent() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   // Pagamento por aluno (nome → info). Inicia vazio ("—", pendente).
@@ -379,5 +379,16 @@ export default function ReportPage() {
         </ul>
       </div>
     </div>
+  );
+}
+
+// Bloqueia o acesso por URL direta: sem isso um aluno abre /arena/report
+// e vê a tela. Isto é só conveniência de interface — quem realmente
+// protege os dados são as policies de RLS no banco.
+export default function ReportPage() {
+  return (
+    <RequireAdmin>
+      <ReportPageContent />
+    </RequireAdmin>
   );
 }

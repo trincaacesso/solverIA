@@ -1,9 +1,12 @@
 -- =====================================================================
 -- CT VH Futevôlei — estrutura do banco
 --
--- Como aplicar: painel do Supabase -> SQL Editor -> New query ->
--- colar este arquivo inteiro -> Run.
--- Depois rode 0002_rls.sql, que liga a segurança.
+-- Como aplicar: painel do Supabase -> SQL Editor -> aba "+" (New query)
+-- -> colar SÓ este arquivo -> Run. Depois repita numa aba NOVA para o
+-- 0002_rls.sql, que liga a segurança.
+--
+-- Pode rodar quantas vezes quiser: tudo aqui é "if not exists" / "on
+-- conflict do nothing", então repetir não quebra nem duplica nada.
 -- =====================================================================
 
 
@@ -14,7 +17,7 @@
 -- gente não pode alterar. Tudo que é "do CT" (turma, plano, cargo)
 -- vive aqui, ligado por id.
 -- ---------------------------------------------------------------------
-create table public.profiles (
+create table if not exists public.profiles (
   id            uuid primary key references auth.users(id) on delete cascade,
   username      text unique not null,
   full_name     text not null,
@@ -69,6 +72,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
@@ -77,7 +81,7 @@ create trigger on_auth_user_created
 -- ---------------------------------------------------------------------
 -- 2. TURMAS
 -- ---------------------------------------------------------------------
-create table public.turmas (
+create table if not exists public.turmas (
   id    uuid primary key default gen_random_uuid(),
   nome  text unique not null,
   ordem int default 0
@@ -91,13 +95,14 @@ insert into public.turmas (nome, ordem) values
   ('Feminino', 5),
   ('Feminino Avançado', 6),
   ('Misto Aprendiz', 7),
-  ('—', 99);
+  ('—', 99)
+on conflict (nome) do nothing;
 
 
 -- ---------------------------------------------------------------------
 -- 3. AULAS — espelha a interface ClassData de app/arena/calendar/page.tsx
 -- ---------------------------------------------------------------------
-create table public.aulas (
+create table if not exists public.aulas (
   id         uuid primary key default gen_random_uuid(),
   nome       text not null,
   professor  text default 'A definir',
@@ -109,7 +114,7 @@ create table public.aulas (
   created_at timestamptz default now()
 );
 
-create index aulas_data_idx on public.aulas (data);
+create index if not exists aulas_data_idx on public.aulas (data);
 
 
 -- ---------------------------------------------------------------------
@@ -118,7 +123,7 @@ create index aulas_data_idx on public.aulas (data);
 -- profile_id nulo + nome_livre preenchido cobre os casos que já existem
 -- hoje nas listas, como "Ericky e Biel" (dupla) e "Clarckson (1-8)".
 -- ---------------------------------------------------------------------
-create table public.aula_alunos (
+create table if not exists public.aula_alunos (
   id          uuid primary key default gen_random_uuid(),
   aula_id     uuid not null references public.aulas(id) on delete cascade,
   profile_id  uuid references public.profiles(id) on delete set null,
@@ -132,14 +137,14 @@ create table public.aula_alunos (
   unique (aula_id, profile_id)
 );
 
-create index aula_alunos_aula_idx on public.aula_alunos (aula_id);
+create index if not exists aula_alunos_aula_idx on public.aula_alunos (aula_id);
 
 
 -- ---------------------------------------------------------------------
 -- 5. PAGAMENTOS — espelha PaymentInfo de app/arena/report/page.tsx
 -- competencia = primeiro dia do mês de referência (ex.: 2026-08-01)
 -- ---------------------------------------------------------------------
-create table public.pagamentos (
+create table if not exists public.pagamentos (
   id           uuid primary key default gen_random_uuid(),
   profile_id   uuid not null references public.profiles(id) on delete cascade,
   competencia  date not null,
@@ -157,7 +162,7 @@ create table public.pagamentos (
 -- 6. CAMPEONATOS (CEFFLASH)
 -- rounds guarda o Round[] gerado por lib/bracket.ts, como JSON.
 -- ---------------------------------------------------------------------
-create table public.campeonatos (
+create table if not exists public.campeonatos (
   id          uuid primary key default gen_random_uuid(),
   nome        text not null,
   pairs_count int  not null,
@@ -170,7 +175,7 @@ create table public.campeonatos (
 -- ---------------------------------------------------------------------
 -- 7. CONFIG — linha única, espelha app/arena/settings/page.tsx
 -- ---------------------------------------------------------------------
-create table public.config (
+create table if not exists public.config (
   id             smallint primary key default 1 check (id = 1),
   arena_nome     text default 'CT VH',
   abre           time default '06:00',
@@ -181,13 +186,14 @@ create table public.config (
   updated_at     timestamptz default now()
 );
 
-insert into public.config (id) values (1);
+insert into public.config (id) values (1)
+on conflict (id) do nothing;
 
 
 -- ---------------------------------------------------------------------
 -- 8. FEED — tira as URLs de dentro de lib/arena-feed.ts
 -- ---------------------------------------------------------------------
-create table public.feed_posts (
+create table if not exists public.feed_posts (
   id         uuid primary key default gen_random_uuid(),
   url        text unique not null,
   ordem      int default 0,
@@ -195,7 +201,7 @@ create table public.feed_posts (
 );
 
 -- Substitui o controle de "post já visto" que hoje vive no localStorage.
-create table public.feed_seen (
+create table if not exists public.feed_seen (
   profile_id uuid not null references public.profiles(id) on delete cascade,
   post_id    uuid not null references public.feed_posts(id) on delete cascade,
   seen_at    timestamptz default now(),
@@ -207,7 +213,7 @@ create table public.feed_seen (
 -- 9. DEVICE_TOKENS — o "endereço" de cada celular, para o push saber
 -- para onde mandar a notificação.
 -- ---------------------------------------------------------------------
-create table public.device_tokens (
+create table if not exists public.device_tokens (
   id         uuid primary key default gen_random_uuid(),
   profile_id uuid not null references public.profiles(id) on delete cascade,
   token      text unique not null,
@@ -216,14 +222,14 @@ create table public.device_tokens (
   updated_at timestamptz default now()
 );
 
-create index device_tokens_profile_idx on public.device_tokens (profile_id);
+create index if not exists device_tokens_profile_idx on public.device_tokens (profile_id);
 
 
 -- ---------------------------------------------------------------------
 -- 10. AVISOS — histórico do que o admin disparou
 -- alvo: 'todos' | 'turma:<nome>' | 'user:<uuid>'
 -- ---------------------------------------------------------------------
-create table public.avisos (
+create table if not exists public.avisos (
   id         uuid primary key default gen_random_uuid(),
   titulo     text not null,
   corpo      text not null,

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Search, UserPlus, Phone, Mail, Pencil, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROSTER } from "@/lib/arena-students";
-import { useAuth } from "@/components/arena/auth-context";
+import { useAuth, RequireAdmin } from "@/components/arena/auth-context";
 
 type Status = "Ativo" | "Inadimplente" | "Inativo";
 type Plan =
@@ -96,7 +96,7 @@ const emptyForm: StudentForm = {
   status: "Ativo",
 };
 
-export default function StudentsPage() {
+function StudentsPageContent() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [students, setStudents] = useState<Student[]>(initialStudents);
@@ -461,5 +461,16 @@ export default function StudentsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Bloqueia o acesso por URL direta: sem isso um aluno abre /arena/students
+// e vê a tela. Isto é só conveniência de interface — quem realmente
+// protege os dados são as policies de RLS no banco.
+export default function StudentsPage() {
+  return (
+    <RequireAdmin>
+      <StudentsPageContent />
+    </RequireAdmin>
   );
 }

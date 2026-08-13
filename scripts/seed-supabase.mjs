@@ -193,7 +193,11 @@ for (const u of usuarios) {
 
   if (!error) {
     criados++;
-    credenciais.push(`${u.username.padEnd(18)} ${u.password.padEnd(18)} ${u.full_name}`);
+    // a senha do admin não entra na lista impressa: essa lista é feita
+    // para ser copiada e distribuída aos alunos
+    if (u.role !== "admin") {
+      credenciais.push(`${u.username.padEnd(18)} ${u.password.padEnd(18)} ${u.full_name}`);
+    }
     console.log(`✅ ${u.username}`);
   } else if (/already|exists|registered/i.test(error.message)) {
     jaExistiam++;
