@@ -5,6 +5,7 @@
 
 # next.js
 /.next/
+# export estático do app mobile (npm run build:mobile)
 /out/
 
 # production
