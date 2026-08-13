@@ -16,6 +16,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Falha aqui, em 5 segundos e com mensagem clara, em vez de quebrar
+      # lá na frente com "supabaseUrl is required".
+      - name: Conferir os secrets do Supabase
+        run: |
+          faltou=0
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
+            echo "::error::Falta o secret NEXT_PUBLIC_SUPABASE_URL"
+            faltou=1
+          fi
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::Falta o secret NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            faltou=1
+          fi
+          if [ $faltou -eq 1 ]; then
+            echo ""
+            echo "Cadastre em: Settings > Secrets and variables > Actions"
+            echo "  https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "Os valores estão no seu arquivo .env.local."
+            exit 1
+          fi
+          echo "Secrets presentes."
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -25,6 +47,15 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+
+      # O Capacitor 8 compila contra o Android 36, que nem sempre vem
+      # pré-instalado na máquina do GitHub. Esta ação garante o SDK e
+      # aceita as licenças — sem ela o Gradle para pedindo confirmação
+      # que ninguém pode dar, já que não há teclado no servidor.
+      - name: Preparar o Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-36 build-tools;36.0.0"
 
       - name: Instalar dependências
         run: npm ci
@@ -46,7 +77,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Publicar o APK para download
         uses: actions/upload-artifact@v4

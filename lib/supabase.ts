@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Conexão com o banco.
@@ -47,10 +47,38 @@ export function setRemember(remember: boolean) {
   localStorage.setItem(REMEMBER_KEY, remember ? "1" : "0");
 }
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
+/**
+ * A conexão é criada só no primeiro uso de verdade, e não quando o
+ * arquivo é importado.
+ *
+ * MOTIVO: durante `next build`, o Next executa os componentes no
+ * servidor para gerar o HTML de cada página. Se o cliente fosse criado
+ * na importação, ele tentaria se conectar nesse momento — sem ninguém
+ * logado e sem nada a consultar — e derrubaria o build inteiro com
+ * "supabaseUrl is required" caso a variável de ambiente faltasse.
+ *
+ * Como todo acesso ao banco acontece dentro de useEffect e de cliques,
+ * que só rodam no navegador, adiar a criação resolve: o build passa e o
+ * erro (se houver) aparece na hora certa, com uma mensagem que ajuda.
+ */
+let cliente: SupabaseClient | null = null;
+
+function getCliente(): SupabaseClient {
+  if (cliente) return cliente;
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const chave = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !chave) {
+    throw new Error(
+      "Faltam as variáveis NEXT_PUBLIC_SUPABASE_URL e " +
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY. No seu PC elas ficam no arquivo " +
+        ".env.local; na Vercel, em Settings > Environment Variables; e " +
+        "no app, nos Secrets do GitHub (usados durante o build).",
+    );
+  }
+
+  cliente = createClient(url, chave, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -60,8 +88,25 @@ export const supabase = createClient(
       // formato do login falso e não é compatível
       storageKey: "ctvh-auth-v2",
     },
+  });
+  return cliente;
+}
+
+/**
+ * Use normalmente: supabase.from(...), supabase.auth...
+ *
+ * O .bind() é necessário: o supabase-js usa campos privados de classe,
+ * que só funcionam quando o método é chamado com o objeto original
+ * como `this`. Sem o bind, `this` seria este Proxy e os acessos
+ * privados falhariam.
+ */
+export const supabase = new Proxy({} as SupabaseClient, {
+  get: (_alvo, prop) => {
+    const real = getCliente();
+    const valor = Reflect.get(real, prop);
+    return typeof valor === "function" ? valor.bind(real) : valor;
   },
-);
+});
 
 /**
  * Os alunos não têm e-mail, mas o Supabase exige um para criar conta.

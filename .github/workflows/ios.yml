@@ -17,6 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Confere antes de gastar minutos de macOS, que custam 10x.
+      - name: Conferir os secrets do Supabase
+        run: |
+          faltou=0
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
+            echo "::error::Falta o secret NEXT_PUBLIC_SUPABASE_URL"
+            faltou=1
+          fi
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::Falta o secret NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            faltou=1
+          fi
+          if [ $faltou -eq 1 ]; then
+            echo ""
+            echo "Cadastre em: Settings > Secrets and variables > Actions"
+            echo "  https://github.com/${{ github.repository }}/settings/secrets/actions"
+            exit 1
+          fi
+          echo "Secrets presentes."
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -36,6 +56,11 @@ jobs:
       # por isso não existe passo de `pod install` aqui.
       - name: Copiar para o projeto iOS
         run: npx cap sync ios
+
+      # Se o build falhar com "scheme not found", é aqui que se descobre:
+      # a lista mostra o que o xcodebuild realmente enxerga.
+      - name: Conferir os schemes disponíveis
+        run: xcodebuild -list -project ios/App/App.xcodeproj
 
       # CODE_SIGNING_ALLOWED=NO: sem a conta Apple Developer paga
       # (US$ 99/ano) não há certificado para assinar. O .ipa sai sem
