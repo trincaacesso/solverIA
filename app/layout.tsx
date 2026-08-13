@@ -57,6 +57,13 @@ export const viewport: Viewport = {
   themeColor: "#05060c",
   width: "device-width",
   initialScale: 1,
+  // Comportamento de app, não de página web: sem zoom por pinça e sem
+  // duplo-toque ampliando o layout.
+  maximumScale: 1,
+  userScalable: false,
+  // Libera o env(safe-area-inset-*) do CSS. Sem isto, o conteúdo fica
+  // escondido atrás do notch e da barra de gestos do iPhone.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

@@ -192,7 +192,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen text-arena-ink">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-col border-r border-arena-border bg-arena-card/80 shadow-sm backdrop-blur-md md:flex">
-        <div className="flex h-16 items-center border-b border-arena-border px-4">
+        <div className="flex h-header-safe items-center border-b border-arena-border px-4 pt-safe">
           <Brand />
         </div>
         <NavLinks />
@@ -206,7 +206,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             onClick={() => setIsSidebarOpen(false)}
           />
           <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-arena-card shadow-xl backdrop-blur-md">
-            <div className="flex h-16 items-center justify-between border-b border-arena-border px-4">
+            <div className="flex h-header-safe items-center justify-between border-b border-arena-border px-4 pt-safe">
               <Brand />
               <button
                 onClick={() => setIsSidebarOpen(false)}
@@ -223,7 +223,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-arena-border bg-arena-card/80 px-4 shadow-sm backdrop-blur-md">
+        <header className="sticky top-0 z-40 flex h-header-safe items-center justify-between border-b border-arena-border bg-arena-card/80 px-4 pt-safe shadow-sm backdrop-blur-md">
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -288,7 +288,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 pb-safe sm:p-6">{children}</main>
       </div>
     </div>
   );

@@ -26,3 +26,38 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ── Capacitor (app nativo) ──────────────────────────────────────────
+# O CÓDIGO de android/ e ios/ VAI para o Git, de propósito: o build do
+# iOS roda na nuvem (GitHub Actions) e precisa dessas pastas. Se fossem
+# recriadas a cada build, perderíamos ícones, permissões, a config do
+# Firebase e o número da versão. O que se ignora aqui é só o que o
+# compilador gera.
+/android/build/
+/android/app/build/
+/android/.gradle/
+/android/local.properties
+/android/.idea/
+/android/capacitor-cordova-android-plugins/
+/android/app/src/main/assets/public/
+/android/app/src/main/assets/capacitor.config.json
+/android/app/src/main/assets/capacitor.plugins.json
+
+/ios/App/Pods/
+/ios/App/build/
+/ios/App/output/
+/ios/DerivedData/
+/ios/App/App/public/
+/ios/App/App/capacitor.config.json
+/ios/App/App/config.xml
+/ios/capacitor-cordova-ios-plugins/
+
+# ── Segredos que nunca entram no repositório ────────────────────────
+# conta de serviço do Firebase (a que assina o envio de push)
+/service-account*.json
+# chaves de assinatura da Apple e do Android
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision

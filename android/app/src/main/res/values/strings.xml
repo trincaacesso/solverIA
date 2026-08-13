@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CT VH Futevôlei</string>
+    <string name="title_activity_main">CT VH Futevôlei</string>
+    <string name="package_name">br.com.ctvh.arena</string>
+    <string name="custom_url_scheme">br.com.ctvh.arena</string>
+</resources>

@@ -38,6 +38,48 @@
   }
 }
 
+/* ── Ajustes para o app nativo ──────────────────────────────────────
+   Só fazem diferença dentro do app; no navegador são inofensivos. */
+@layer base {
+  html,
+  body {
+    /* mata o "puxar para atualizar" fantasma e o efeito elástico da
+       rolagem, que dentro de um app parecem defeito */
+    overscroll-behavior-y: none;
+    /* tira o retângulo cinza que o Android pisca a cada toque */
+    -webkit-tap-highlight-color: transparent;
+    /* sem isto, pisca um flash branco no instante em que o app abre */
+    background-color: #05060c;
+  }
+
+  /* Texto de app não fica selecionável ao segurar o dedo — só os campos. */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input,
+  textarea,
+  select,
+  [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+@layer utilities {
+  /* Área segura: o vão do notch/câmera no topo e o da barra de gestos
+     embaixo. Em aparelho sem notch, env() vale 0 e nada muda. */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .h-header-safe {
+    height: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+}
+
 @layer components {
   .container-px {
     @apply mx-auto w-full max-w-7xl px-5 sm:px-8;

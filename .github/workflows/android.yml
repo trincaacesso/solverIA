@@ -1,0 +1,56 @@
+name: App Android (APK)
+
+# Roda no Ubuntu, que no plano gratuito consome os minutos na proporção
+# 1x — praticamente de graça. O do iOS precisa de macOS e consome 10x,
+# por isso ele é manual (ver ios.yml).
+on:
+  push:
+    branches: [main, mobile]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Este passo é o guarda-costas do app: se alguém adicionar uma API
+      # route, um middleware ou um Server Action, o export estático quebra
+      # AQUI, de graça, em vez de virar tela branca no celular do aluno.
+      - name: Gerar o site estático
+        env:
+          MOBILE_BUILD: "1"
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npx next build
+
+      - name: Copiar para o projeto Android
+        run: npx cap sync android
+
+      - name: Compilar o APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Publicar o APK para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctvh-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

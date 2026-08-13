@@ -25,6 +25,7 @@ import {
   longDate,
 } from "@/lib/arena-date";
 import { cn } from "@/lib/utils";
+import { shareText } from "@/lib/open-external";
 import { useAuth } from "@/components/arena/auth-context";
 
 type Level = "Iniciante" | "Intermediário" | "Avançado";
@@ -179,13 +180,12 @@ export default function CalendarPage() {
     .filter((c) => isSameDay(parseISODate(c.date), panelDay))
     .sort((a, b) => a.time.localeCompare(b.time));
 
-  const sendWhatsAppList = () => {
+  // Dentro do app, window.open não faz nada: o WebView não tem para onde
+  // abrir uma aba nova e o clique morre em silêncio. shareText() abre a
+  // folha nativa de compartilhamento, com o WhatsApp na lista.
+  const sendWhatsAppList = async () => {
     const text = buildWhatsAppList(panelDay, classes);
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    await shareText(text, "Lista do treino");
   };
 
   const emptyForm: NewClassForm = {

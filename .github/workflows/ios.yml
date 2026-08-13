@@ -1,0 +1,70 @@
+name: App iOS (ipa sem assinatura)
+
+# SOMENTE MANUAL, de propósito.
+#
+# Este job roda em macOS, que consome os minutos do plano gratuito na
+# proporção 10x: cada minuto real gasta 10 dos 2.000 do mês. Isso dá
+# cerca de 200 minutos reais de macOS, ou ~15 builds por mês.
+# NUNCA troque isto por "on: push" — os minutos acabam em dois dias.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 40 # trava contra build travado queimando minutos
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar o site estático
+        env:
+          MOBILE_BUILD: "1"
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npx next build
+
+      # O Capacitor 8 usa Swift Package Manager, não CocoaPods —
+      # por isso não existe passo de `pod install` aqui.
+      - name: Copiar para o projeto iOS
+        run: npx cap sync ios
+
+      # CODE_SIGNING_ALLOWED=NO: sem a conta Apple Developer paga
+      # (US$ 99/ano) não há certificado para assinar. O .ipa sai sem
+      # assinatura e quem assina é o Sideloadly, no seu PC, usando seu
+      # Apple ID gratuito.
+      - name: Compilar (sem assinatura)
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            build
+
+      # Um .ipa é só um .zip com o app dentro de uma pasta Payload.
+      - name: Montar o .ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry CTVH-unsigned.ipa Payload
+
+      - name: Publicar o .ipa para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctvh-ios-unsigned
+          path: CTVH-unsigned.ipa
+          retention-days: 30

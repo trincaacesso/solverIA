@@ -67,7 +67,8 @@ console.log("\nALUNO (ana.clara)");
   checa("consegue entrar", !!user, error?.message);
 
   if (user) {
-    const { data: perfis } = await db.from("profiles").select("id, full_name, role");
+    const { data: perfis } = await db
+      .from("profiles").select("id, full_name, role, phone");
     checa(
       "enxerga só o próprio cadastro",
       perfis?.length === 1,
@@ -105,16 +106,28 @@ console.log("\nALUNO (ana.clara)");
       `turma virou "${turmaDepois?.[0]?.turma}"`,
     );
 
-    // mas o que é dela, ela edita — isso precisa continuar funcionando
+    // aluno é somente leitura: nem o próprio telefone ele altera
+    const telAntes = perfis?.[0]?.phone ?? null;
     const tel = `319${Math.floor(10000000 + Math.random() * 89999999)}`;
     await db.from("profiles").update({ phone: tel }).eq("id", user.id);
     const { data: telDepois } = await db
       .from("profiles").select("phone").eq("id", user.id);
     checa(
-      "AINDA consegue editar o próprio telefone",
-      telDepois?.[0]?.phone === tel,
-      `esperava ${tel}, veio "${telDepois?.[0]?.phone}"`,
+      "NÃO consegue editar nem o próprio telefone",
+      telDepois?.[0]?.phone !== tel,
+      `o telefone virou ${telDepois?.[0]?.phone}`,
     );
+
+    // e não mexe na lista do treino
+    const { data: listaAntes } = await db.from("aula_alunos").select("id").limit(1);
+    if (listaAntes?.length) {
+      await db.from("aula_alunos").update({ confirmado: true }).eq("id", listaAntes[0].id);
+      const { data: conf } = await db
+        .from("aula_alunos").select("confirmado").eq("id", listaAntes[0].id);
+      checa("NÃO confirma presença sozinho", conf?.[0]?.confirmado !== true);
+    } else {
+      console.log("  ·  (sem aulas cadastradas ainda — pulei o teste de presença)");
+    }
 
     const { data: turmas } = await db.from("turmas").select("id");
     checa("enxerga as turmas (isso é permitido)", (turmas?.length ?? 0) === 8);
