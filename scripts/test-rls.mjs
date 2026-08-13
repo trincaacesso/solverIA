@@ -6,7 +6,10 @@
  * Usa a MESMA chave pública que vai dentro do app. Se um aluno
  * conseguir ler o que não deve aqui, conseguiria no app também.
  *
- * Não altera nada no banco.
+ * O teste TENTA fazer coisas proibidas de propósito — é assim que se
+ * descobre uma brecha. Quando a brecha existe, a tentativa funciona e
+ * suja o banco de verdade. Por isso, ao final ele sempre restaura o
+ * cadastro usado como cobaia ao estado original.
  */
 
 import { readFileSync } from "node:fs";
@@ -27,6 +30,40 @@ const novoCliente = () =>
   createClient(url, anon, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+
+/** Cliente com poderes totais — usado SÓ para fotografar e restaurar. */
+const admDb = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
+
+const COBAIA = "ana.clara";
+
+/** Estado do cadastro-cobaia antes de qualquer teste. */
+const { data: estadoOriginal } = await admDb
+  .from("profiles")
+  .select("role, turma, plan, status, phone")
+  .eq("username", COBAIA)
+  .single();
+
+/** Devolve a cobaia ao estado original, tenha o teste passado ou não. */
+async function restaurar() {
+  if (!estadoOriginal) return;
+  const { data: agora } = await admDb
+    .from("profiles")
+    .select("role, turma, plan, status, phone")
+    .eq("username", COBAIA)
+    .single();
+
+  const mudou = JSON.stringify(agora) !== JSON.stringify(estadoOriginal);
+  if (!mudou) return;
+
+  await admDb.from("profiles").update(estadoOriginal).eq("username", COBAIA);
+  console.log(
+    `\n⚠️  ${COBAIA} foi alterada durante o teste (a brecha existe) e ` +
+      `foi restaurada para ${JSON.stringify(estadoOriginal)}`,
+  );
+}
+process.on("exit", () => {}); // restauração é chamada no fim, explicitamente
 
 let passou = 0;
 let falhou = 0;
@@ -180,5 +217,13 @@ console.log("\nSENHA ERRADA");
   checa("é recusada", !user);
 }
 
-console.log(`\n${passou} passaram · ${falhou} falharam\n`);
+await restaurar();
+
+console.log(`\n${passou} passaram · ${falhou} falharam`);
+if (falhou > 0) {
+  console.log(
+    "\nSe as falhas forem de 'aluno NÃO consegue editar', falta aplicar\n" +
+      "supabase/migrations/0004_somente_professor_edita.sql no SQL Editor.\n",
+  );
+}
 process.exit(falhou > 0 ? 1 : 0);
