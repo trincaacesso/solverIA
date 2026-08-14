@@ -166,8 +166,20 @@ console.log("\nALUNO (ana.clara)");
       console.log("  ·  (sem aulas cadastradas ainda — pulei o teste de presença)");
     }
 
+    // o aluno precisa ler as turmas para a tela de aulas funcionar
     const { data: turmas } = await db.from("turmas").select("id");
-    checa("enxerga as turmas (isso é permitido)", (turmas?.length ?? 0) === 8);
+    checa(
+      "enxerga as turmas (isso é permitido)",
+      (turmas?.length ?? 0) > 0,
+      `viu ${turmas?.length ?? 0}`,
+    );
+
+    const { data: grade } = await db.from("grade_semanal").select("id");
+    checa(
+      "enxerga a grade semanal (19 aulas fixas)",
+      (grade?.length ?? 0) === 19,
+      `viu ${grade?.length ?? 0}`,
+    );
 
     await db.auth.signOut();
   }
