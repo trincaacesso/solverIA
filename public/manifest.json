@@ -1,0 +1,42 @@
+{
+  "name": "CT VH Futevôlei",
+  "short_name": "CT VH",
+  "description": "Sistema de gestão do CT VH — aulas, presenças e mensalidades.",
+  "lang": "pt-BR",
+  "start_url": "/arena/calendar",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050308",
+  "theme_color": "#05060c",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calendário de aulas",
+      "url": "/arena/calendar"
+    },
+    {
+      "name": "Feed",
+      "url": "/arena/feed"
+    }
+  ]
+}

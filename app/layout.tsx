@@ -51,6 +51,31 @@ export const metadata: Metadata = {
       "AI WhatsApp agents, dashboards and automations that help companies sell more.",
   },
   robots: { index: true, follow: true },
+
+  // ── Instalação como app (PWA) ──────────────────────────────────────
+  // Sem estas marcações, "Adicionar à Tela de Início" no iPhone cria só
+  // um atalho de navegador, com a barra de endereço à mostra.
+  manifest: "/manifest.json",
+
+  appleWebApp: {
+    capable: true, // abre em tela cheia, sem a barra do Safari
+    title: "CT VH",
+    // "default" mantém a barra de status legível sobre o fundo escuro
+    statusBarStyle: "black-translucent",
+  },
+
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    // O iPhone ignora o manifest para o ícone e usa este.
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+
+  // O Safari em standalone tenta transformar números em links de
+  // telefone, o que estraga horários como "18:30".
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

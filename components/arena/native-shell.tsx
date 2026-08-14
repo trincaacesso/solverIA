@@ -14,6 +14,29 @@ import { isNative, isAndroid } from "@/lib/platform";
  * atrás do isNative().
  */
 export function NativeShell() {
+  // No navegador (site e PWA), liga o service worker — é ele que faz o
+  // app abrir com internet ruim e receber notificação fechado.
+  // Dentro do app nativo não faz sentido: os arquivos já vêm no APK.
+  useEffect(() => {
+    if (isNative()) return;
+    if (typeof window === "undefined") return;
+    if (!("serviceWorker" in navigator)) return;
+
+    // Espera a página terminar de carregar para não disputar banda com
+    // o que o usuário está esperando ver.
+    const registrar = () => {
+      navigator.serviceWorker.register("/sw.js").catch((e) => {
+        console.warn("[pwa] service worker não registrou:", e);
+      });
+    };
+
+    if (document.readyState === "complete") registrar();
+    else {
+      window.addEventListener("load", registrar);
+      return () => window.removeEventListener("load", registrar);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isNative()) return;
 
