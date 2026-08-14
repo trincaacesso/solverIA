@@ -60,6 +60,32 @@ export const alunos = {
   },
 
   /**
+   * Cadastra um aluno novo, com login e senha.
+   *
+   * Passa por uma função no servidor porque criar conta exige a chave
+   * de administrador do banco — que não pode ficar dentro do app, senão
+   * qualquer pessoa a extrairia e teria acesso total.
+   *
+   * Devolve o login e a senha inicial para entregar ao aluno.
+   */
+  async criar(dados: {
+    full_name: string;
+    turma?: string;
+    phone?: string;
+    contact_email?: string;
+    plan?: Plano;
+    aulas_semana?: number;
+    status?: SituacaoAluno;
+  }): Promise<{ username: string; senha: string }> {
+    const { data, error } = await supabase.functions.invoke("criar-aluno", {
+      body: dados,
+    });
+    if (error) throw new Error(error.message);
+    if (data?.error) throw new Error(data.error);
+    return { username: data.username, senha: data.senha };
+  },
+
+  /**
    * Os quatro contadores do topo da tela, numa consulta só.
    *
    * Como são apenas ~65 alunos, contar aqui sai mais barato do que

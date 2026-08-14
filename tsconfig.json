@@ -19,5 +19,6 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "chatbot"]
+  "_comentario_exclude": "supabase/functions roda no Deno, no servidor do Supabase — tem outro conjunto de tipos (Deno, npm:) e não faz parte do site.",
+  "exclude": ["node_modules", "chatbot", "supabase"]
 }
